@@ -1,0 +1,76 @@
+<section th:fragment="boxoffice" xmlns:th="http://www.thymeleaf.org"
+         class="flex-1  py-12 text-center">
+
+    <!-- 상단 필터 버튼 -->
+    <div class="flex justify-center items-center gap-4 mb-6">
+        <button id="btnDaily" class="toggle-btn px-4 py-1 rounded-full text-sm font-medium border border-gray-300 bg-white hover:bg-blue-50 transition">
+            일간 박스오피스
+        </button>
+        <button id="btnNow" class="toggle-btn px-4 py-1 rounded-full text-sm font-medium border border-gray-300 bg-white hover:bg-blue-50 transition">
+            최근개봉영화
+        </button>
+        <button id="btnUpcoming" class="toggle-btn px-4 py-1 rounded-full text-sm font-medium border border-gray-300 bg-white hover:bg-blue-50 transition">
+            상영예정
+        </button>
+    </div>
+
+    <div class="flex items-center justify-between mb-6">
+        <!-- 왼쪽: 날짜 -->
+        <span id="showRange" class="text-gray-500 text-sm" th:text="${daily.showRange}">20251103</span>
+
+        <!-- 가운데: 타이틀 -->
+        <h1 id="title" class="text-xl font-semibold text-gray-800 text-center flex-1" th:text="${daily.boxOfficeType}">
+            일간 박스오피스
+        </h1>
+
+        <!-- 오른쪽: 보기 전환 아이콘 2개 -->
+        <div class="flex items-center gap-3">
+            <!-- 슬라이드 보기 -->
+            <button id="slideViewBtn" class="p-2 rounded-md hover:bg-blue-100" title="슬라이드 보기">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"
+                     class="w-6 h-6 text-blue-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8h18M3 16h18M8 8v8M16 8v8" />
+                </svg>
+            </button>
+
+            <!-- 리스트 보기 -->
+            <button id="listViewBtn" class="p-2 rounded-md hover:bg-blue-100" title="리스트 보기">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"
+                     class="w-6 h-6 text-blue-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+
+
+    <div class="max-w-5xl mx-auto">
+        <div class="slider-container ">
+            <button id="prevBtn" class="arrow-btn absolute left-0 md:-left-10">&#10094;</button>
+            <!-- 카드 영역 -->
+            <div class="overflow-hidden w-full">
+                <div id="movieTrack" class="flex gap-4"></div>
+            </div>
+            <button id="nextBtn" class="arrow-btn absolute right-0 md:-right-10">&#10095;</button>
+        </div>
+    </div>
+
+
+    <!-- 더보기/줄이기 버튼 -->
+    <div class="flex justify-center mt-8">
+        <button id="toggleViewBtn" class="px-6 py-2 rounded-full text-sm font-medium border-2
+        border-blue-500 text-blue-600 hover:bg-blue-50 transition-all">
+            더보기 ▼
+        </button>
+    </div>
+
+    <script th:inline="javascript">
+        window.boxofficeData = {
+            daily: [[${daily}]],
+            nowPlaying: [[${nowPlaying}]],
+            upcoming: [[${upcoming}]]
+        };
+    </script>
+
+</section>

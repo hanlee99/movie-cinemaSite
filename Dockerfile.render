@@ -1,0 +1,27 @@
+# Build stage
+FROM gradle:8.5-jdk21 AS build
+WORKDIR /app
+
+# Gradle 캐시 최적화
+COPY build.gradle settings.gradle gradlew ./
+COPY gradle ./gradle
+RUN gradle dependencies --no-daemon
+
+# 소스 복사 & 빌드
+COPY . .
+RUN gradle clean bootJar -x test --no-daemon
+
+# Run stage
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# 빌드된 jar 복사
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Render 환경변수
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Render가 PORT 환경변수 제공
+EXPOSE ${PORT:-8080}
+
+ENTRYPOINT ["java", "-Dserver.port=${PORT}", "-jar", "app.jar"]

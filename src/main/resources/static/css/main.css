@@ -1,0 +1,48 @@
+body {
+  background-color: #f8f9fb;
+  color: #1f2937;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+main {
+  background-color: #f1f5f9; /* body보다 약간 진한 톤 */
+}
+/*
+section {
+    outline: 1px solid red;
+  }
+*/
+.page-section {
+  min-height: 100vh;
+  scroll-margin-top: 70px; /* ✅ 헤더 높이만큼 자동 보정 */
+}
+
+ 🔹 섹션 사이 구분선
+.divider {
+  width: 100%;
+  height: 3px;
+  background-color: #3b82f6;  파란 줄
+
+
+}/**/
+
+header {
+  background: #ffffff;
+  border-bottom: 3px solid #3b82f6;
+  padding: 1rem 3rem;
+}
+
+footer {
+  background-color: #ffffff;
+  border-top: 3px solid #3b82f6;
+  color: #6b7280;
+}
+
+
+#boxoffice {
+  background: linear-gradient(180deg, #ffffff, #f2f6ff);
+}
+
+#cinema {
+  background: linear-gradient(180deg, #ffffff, #f2f6ff);
+}

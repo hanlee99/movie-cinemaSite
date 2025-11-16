@@ -1,0 +1,64 @@
+#movieTrack {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.card {
+    border-radius: 1rem;
+    border:   1px solid #e5e7eb;
+    flex: 0 0 auto;
+    width: 14rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.slider-container {
+  position: relative; /* 버튼 기준점! */
+  display: flex;
+  align-items: center;
+
+}
+
+.card img {
+  width: 100%;
+  object-fit: cover; /* 이미지 비율 유지하면서 카드 영역에 꽉 차게 */
+  border-radius: 1rem; /* 카드의 모서리와 동일하게 */
+  display: block; /* inline 요소의 여백 제거 */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-btn.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.arrow-btn {
+  position: absolute;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: white;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;*/
+
+}
+
+.arrow-btn:hover {
+  background-color: #3b82f6;
+  color: white;
+  transform: scale(1.1);
+}
+
+#toggleViewBtn {
+  position: relative;
+  z-index: 10;
+}
+
