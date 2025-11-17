@@ -43,8 +43,8 @@
 
 ### 1. 레포지토리 클론
 ```bash
-git clone https://github.com/hanlee99/moviesite.git
-cd moviesite/demo
+git clone https://github.com/hanlee99/movie-cinemaSite.git
+cd movie-cinemaSite
 ```
 
 ### 2. 환경변수 설정
