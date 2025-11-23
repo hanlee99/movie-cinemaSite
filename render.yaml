@@ -1,24 +1,15 @@
 services:
-  # Web Service
   - type: web
     name: moviesite
     env: docker
+    region: oregon
+    plan: free
     buildCommand: "./gradlew clean bootJar -x test"
     startCommand: "java -jar build/libs/*.jar"
-    envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: prod
-      - key: KOBIS_API_KEY
-        sync: false  # 수동으로 설정
-      - key: KMDB_API_KEY
-        sync: false  # 수동으로 설정
-      - key: DATABASE_URL
-        fromDatabase:
-          name: moviedb
-          property: connectionString
 
 databases:
-  # PostgreSQL
   - name: moviedb
     databaseName: moviedb
     user: movieuser
+    plan: free
+

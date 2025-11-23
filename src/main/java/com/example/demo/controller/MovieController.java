@@ -39,13 +39,13 @@ public class MovieController {
     }
 
     @GetMapping("/boxoffice/daily")
-    public DailyBoxOfficeResponse getDailyBoxOffice() {
+    public ResponseEntity<DailyBoxOfficeResponse> getDailyBoxOffice() {
         log.info("GET /api/movies/box-office/daily 요청");
-        return movieService.getDailyBoxOfficeWithMovieInfo();
+        return ResponseEntity.ok(movieService.getDailyBoxOfficeWithMovieInfo());
     }
 
     @GetMapping("/search")
-    public List<MovieResponseDto> searchMovies(@RequestParam String title) {
-        return movieService.findMoviesByTitle(title);
+    public ResponseEntity<List<MovieResponseDto>> searchMovies(@RequestParam String title) {
+        return ResponseEntity.ok(movieService.findMoviesByTitle(title));
     }
 }

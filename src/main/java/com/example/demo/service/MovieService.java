@@ -35,6 +35,11 @@ public class MovieService {
                 .orElseThrow(() -> new RuntimeException("영화를 찾을 수 없습니다: " + id));
     }
 
+    public MovieEntity findByIdWithPeople(Long id) {
+        return movieRepository.findByIdWithPeople(id)  // people 가져옴 (상세용)
+                .orElseThrow(() -> new RuntimeException("영화를 찾을 수 없습니다: " + id));
+    }
+
     public List<MovieResponseDto> findMoviesByTitle(String title) {
         log.debug("DB 영화 검색 - title: {}", title);
         List<MovieEntity> movies = movieRepository.findAllByTitleContainingIgnoreCase(title);

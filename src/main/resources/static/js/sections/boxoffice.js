@@ -53,19 +53,29 @@ export function initBoxoffice() {
 
       const figure = document.createElement("figure");
       const img = document.createElement("img");
+
+      const link = document.createElement("a");  // ✅ 추가
+      link.href = `/movies/${m.id}`;              // ✅ 추가
+
       img.src = m.poster || (m.posters?.split("|")[0]) || "/images/irani12.png";
       img.alt = m.title;
-      figure.appendChild(img);
+      link.appendChild(img);                      // ✅ 변경 (figure → link)
+      figure.appendChild(link);                   // ✅ 변경 (img → link)
 
       const body = document.createElement("div");
       body.className = "card-body p-4 text-center";
 
       const h2 = document.createElement("h2");
       h2.className = "card-title text-base font-semibold justify-center";
-      h2.textContent = m.title;
+      const titleLink = document.createElement("a");
+      titleLink.href = `/movies/${m.id}`;
+      titleLink.textContent = m.title;
+      titleLink.className = "hover:text-blue-600 transition";
+      h2.appendChild(titleLink);
 
       const date = document.createElement("p");
       date.className = "text-gray-500 text-sm";
+      //date.textContent = `${formatDate(m.openDt || m.repRlsDate)} 개봉`;
       date.textContent = `${m.openDt || m.repRlsDate || ""} 개봉`;
 
       body.append(h2, date);

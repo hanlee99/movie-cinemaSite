@@ -16,10 +16,10 @@ public class MovieServiceTest {
     @DisplayName("일간 박스오피스 조회 성공")
     void getDailyBoxOffice_Success() {
         // when
-        var result = movieService.getDailyBoxOffice();
+        var result = movieService.getDailyBoxOfficeWithMovieInfo();
 
         // then
         assertNotNull(result);
-        assertNotNull(result.getDailyBoxOfficeList());
+        assertNotNull(result.getMovies());
     }
 }

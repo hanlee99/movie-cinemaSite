@@ -16,6 +16,7 @@ import java.util.List;
 @Builder
 public class MovieResponseDto {
 
+    private Long id;
     private String docId;
     private String title;
     private String titleEng;
@@ -42,7 +43,7 @@ public class MovieResponseDto {
 
     public static MovieResponseDto summary(MovieEntity entity) {
         return MovieResponseDto.builder()
-                .docId(entity.getDocId())
+                .id(entity.getId())
                 .title(entity.getTitle())
                 .genre(entity.getGenre())
                 .poster(entity.getPoster())
@@ -53,6 +54,7 @@ public class MovieResponseDto {
 
     public static MovieResponseDto from(MovieEntity entity) {
         return MovieResponseDto.builder()
+                .id(entity.getId())
                 .docId(entity.getDocId())
                 .title(entity.getTitle())
                 .titleEng(entity.getTitleEng())

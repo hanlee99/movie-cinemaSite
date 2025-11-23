@@ -38,6 +38,7 @@ public class DailyBoxOfficeResponse {
     @Getter
     @Builder
     public static class Movie {
+        private Long id;
         private int rank;
         private String movieCd;
         private String docId;
@@ -52,6 +53,7 @@ public class DailyBoxOfficeResponse {
 
         public static Movie from(BoxOfficeItemDto boxOffice, MovieEntity movie) {
             return Movie.builder()
+                    .id(movie != null ? movie.getId() : null)
                     .rank(boxOffice.getRank())
                     .movieCd(boxOffice.getMovieCd())
                     .docId(movie != null ? movie.getDocId() : null)
