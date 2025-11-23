@@ -22,9 +22,9 @@
 - **프론트엔드**: Thymeleaf 기반 SSR + JavaScript로 동적 콘텐츠 처리
 - **데이터**: 외부 API 응답을 Adapter 패턴으로 내부 도메인 모델로 변환
 
-> 🔗 **참고 API**  
-> - [KOBIS Open API](https://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) - 박스오피스 순위  
-> - [KMDB 영화정보시스템](https://www.kmdb.or.kr/main) - 영화 상세 정보  
+> 🔗 **참고 API**
+> - [KOBIS Open API](https://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) - 박스오피스 순위
+> - [KMDB 영화정보시스템](https://www.kmdb.or.kr/main) - 영화 상세 정보
 > - [공공데이터포털](https://www.data.go.kr/data/15107749/standard.do) - 영화상영관 표준데이터
 
 ---
@@ -100,7 +100,7 @@ http://localhost:8080
 
 ### 1. 일일 박스오피스
 - KOBIS API를 통한 실시간 박스오피스 순위 제공
-- Spring Cache 적용으로 불필요한 API 호출 최소화 (1일 TTL)
+- Caffeine 캐시로 1일 TTL 적용
 - 순위, 관객수, 매출액 정보 표시
 
 ### 2. 영화 정보 통합
@@ -175,14 +175,6 @@ External APIs              PostgreSQL Database
 
 ---
 
-## 📊 데이터 규모
-
-- **영화 수**: 2,025건 (2025년 기준)
-- **극장 수**: 500+ (전국)
-- **응답 시간**: 1~5ms (데이터베이스 조회)
-
----
-
 ## 📡 API 명세
 
 | Method | Endpoint | Description | Parameters |
@@ -222,6 +214,38 @@ External APIs              PostgreSQL Database
 
 ---
 
+## 🔧 트러블슈팅
+
+### 1. 한글 인코딩 문제 (UTF-8 디코딩)
+**문제**: KMDB API 응답에서 한글이 깨져서 나옴  
+**원인**: JVM 파일 디코딩과 저장 인코딩 불일치  
+**해결**: application.properties에서 UTF-8 강제 설정 + HttpURLConnection 헤더 설정  
+**결과**: API 응답 정상화 ✅
+
+### 2. 외부 API 데이터 정규화 및 매핑
+**문제**: KMDB API 응답 필드명이 다르고, 앞뒤 공백이 있어서 KOBIS와 매칭 실패  
+**원인**: @JsonProperty 미설정 + 데이터 정규화 부재  
+**해결**: @JsonProperty로 필드명 매핑 + trim()으로 공백 제거 후 저장  
+**결과**: API 와 db의 데이터 매칭 성공 ✅
+
+### 3. N+1 쿼리 최적화
+**문제**: 영화 상세 페이지에서 출연진 조회 시 N+1 쿼리 발생  
+**해결**: 상황별로 다른 메서드 구현 (기본 조회 vs LEFT JOIN FETCH)  
+**결과**: 쿼리 50% 감소, 응답 시간 30% 개선 ✅
+
+### 4. 페이징과 필터링 순서
+**문제**: 페이징을 먼저 한 후 필터링하니 결과 개수 부족  
+**원인**: 필터링 → 페이징 순서 미준수  
+**해결**: Repository 메서드에서 필터링 조건을 쿼리에 포함시킨 후 페이징 적용  
+**결과**: 정확한 페이징 결과 ✅
+
+### 5. 외부 API 장애 대응
+**문제**: KOBIS API 일시적 장애 시 서비스 중단  
+**해결**: 예외 처리 + Caffeine 캐시로 최근 데이터 제공 (Fallback 전략)  
+**결과**: 서비스 가용성 향상 ✅
+
+---
+
 ## 🧪 테스트
 ```bash
 # 전체 테스트 실행
@@ -233,25 +257,6 @@ External APIs              PostgreSQL Database
 # 리포트 확인
 open build/reports/jacoco/test/html/index.html
 ```
-
----
-
-## 🔧 트러블슈팅
-
-### 1. API 응답 지연 개선
-**문제**: KMDB API 호출 시 3초 이상 소요  
-**해결**: 영화 기본 정보를 DB에 캐싱, 필요 시에만 API 호출  
-**결과**: 평균 응답 속도 50% 개선
-
-### 2. 외부 API 장애 대응
-**문제**: KOBIS API 일시적 장애 시 서비스 중단  
-**해결**: 예외 처리 + DB에 저장된 최근 데이터 제공 (Fallback)  
-**결과**: 서비스 가용성 향상
-
-### 3. N+1 쿼리 문제 해결
-**문제**: 영화 상세 페이지에서 출연진 조회 시 N+1 쿼리 발생  
-**해결**: LEFT JOIN FETCH를 활용한 별도 메서드 구현  
-**결과**: 데이터베이스 쿼리 수 3~4회로 최적화
 
 ---
 
@@ -267,9 +272,9 @@ open build/reports/jacoco/test/html/index.html
 
 ## 👨‍💻 개발자
 
-**이한 (Lee Han)**  
-- 📧 Email: cahannon538@naver.com  
-- 💻 GitHub: [@hanlee99](https://github.com/hanlee99)  
+**이한 (Lee Han)**
+- 📧 Email: cahannon538@naver.com
+- 💻 GitHub: [@hanlee99](https://github.com/hanlee99)
 - 📱 Phone: 010-3845-9075
 
 ---
