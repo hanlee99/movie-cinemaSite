@@ -4,16 +4,12 @@ import com.example.demo.dto.movie.DailyBoxOfficeResponse;
 import com.example.demo.dto.movie.MovieResponseDto;
 import com.example.demo.dto.movie.boxoffice.BoxOfficeItemDto;
 import com.example.demo.dto.movie.boxoffice.DailyBoxOfficeResultDto;
-import com.example.demo.dto.movie.kmdb.KmdbMovieDto;
 import com.example.demo.entity.MovieEntity;
 
-import com.example.demo.external.adapter.KmdbAdapter;
-import com.example.demo.external.adapter.KobisAdapter;
 import com.example.demo.repository.MovieRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,25 +28,11 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class MovieService {
     private final MovieRepository movieRepository;
-    private final KmdbAdapter kmdbAdapter;
-    private final KobisAdapter kobisAdapter;
+    private final BoxOfficeService boxOfficeService;
 
-    public List<MovieResponseDto> searchMovie(String title) {
-        log.info("KMDB API 영화 검색 시작 - title: {}", title);
-        try {
-            List<KmdbMovieDto> kmdbMovies = kmdbAdapter.fetchMovies(title);
-            log.info("KMDB API 영화 검색 완료 - {}건", kmdbMovies.size());
-
-            return kmdbMovies.stream()
-                    .map(dto -> {
-                        MovieEntity temp = MovieEntity.from(dto);
-                        return MovieResponseDto.from(temp);
-                    })
-                    .toList();
-        } catch (Exception e) {
-            log.error("KMDB API 영화 검색 실패 - title: {}", title, e);
-            throw e;
-        }
+    public MovieEntity findById(Long id) {
+        return movieRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("영화를 찾을 수 없습니다: " + id));
     }
 
     public List<MovieResponseDto> findMoviesByTitle(String title) {
@@ -93,29 +75,11 @@ public class MovieService {
                 .map(MovieResponseDto::summary);
     }
 
-    @Cacheable(value = "dailyBoxOffice")
-    public DailyBoxOfficeResultDto getDailyBoxOffice() {
-        String yesterday = LocalDate.now().minusDays(1)
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        log.info("KOBIS API 박스오피스 조회 - targetDt: {}", yesterday);
-
-        try {
-            DailyBoxOfficeResultDto result = kobisAdapter.getDailyBoxOffice(yesterday);
-            log.info("KOBIS API 박스오피스 조회 완료 - {}건",
-                    result.getDailyBoxOfficeList().size());
-            return result;
-        } catch (Exception e) {
-            log.error("KOBIS API 박스오피스 조회 실패 - targetDt: {}", yesterday, e);
-            throw e;
-        }
-    }
-
     public DailyBoxOfficeResponse getDailyBoxOfficeWithMovieInfo() {
         log.info("박스오피스 영화 정보 조회 시작");
 
-        // 1. 박스오피스 정보 (캐시 or API)
-        DailyBoxOfficeResultDto boxOffice = getDailyBoxOffice();
+        // 1. 박스오피스 정보 (캐시)
+        DailyBoxOfficeResultDto boxOffice = boxOfficeService.getDailyBoxOffice();
 
         // 2. 제목 리스트 추출
         List<String> titles = boxOffice.getDailyBoxOfficeList().stream()
@@ -123,22 +87,45 @@ public class MovieService {
                 .toList();
         log.debug("박스오피스 제공 제목들: {}", titles);
 
-        // 3. DB에서 영화 정보 조회
-        List<MovieEntity> movies = movieRepository.findByTitleIn(titles);
-        log.debug("DB 매칭된 영화 제목들: {}",
-                movies.stream().map(MovieEntity::getTitle).toList());
-        log.debug("DB 매칭 결과 - 박스오피스: {}건, DB 매칭: {}건", titles.size(), movies.size());
+        // 3. 영화 정보 매칭
+        Map<String, MovieEntity> movieMap = matchMovies(titles);
 
-        // 4. Map으로 변환
-        Map<String, MovieEntity> movieMap = movies.stream()
-                .collect(Collectors.toMap(MovieEntity::getTitle, m -> m));
-
-        // 5. 응답 생성
+        // 4. 응답 생성
         DailyBoxOfficeResponse response = DailyBoxOfficeResponse.from(boxOffice, movieMap);
-
         log.info("박스오피스 영화 정보 조회 완료 - {}건", response.getMovies().size());
 
         return response;
     }
+
+    private Map<String, MovieEntity> matchMovies(List<String> titles) {
+        // 1차: 정확 매칭 (1번 쿼리)
+        List<MovieEntity> exactMatches = movieRepository.findByTitleIn(titles);
+        Map<String, MovieEntity> movieMap = exactMatches.stream()
+                .collect(Collectors.toMap(MovieEntity::getTitle, m -> m));
+
+        log.debug("정확 매칭: {}건 / {}건", movieMap.size(), titles.size());
+
+        // 2차: 안 된 것만 LIKE 검색
+        for (String title : titles) {
+            if (movieMap.containsKey(title)) {
+                continue;  // 이미 매칭됨
+            }
+
+            // 공백 제거하고 검색
+            String normalized = title.replaceAll("\\s+", "");
+            List<MovieEntity> found = movieRepository.findByTitleContains(normalized);
+
+            if (!found.isEmpty()) {
+                movieMap.put(title, found.get(0));
+                log.debug("LIKE 매칭 성공: {}", title);
+            } else {
+                log.warn("매칭 실패: {}", title);
+            }
+        }
+
+        log.debug("최종 매칭: {}건 / {}건", movieMap.size(), titles.size());
+        return movieMap;
+    }
+
 }
 

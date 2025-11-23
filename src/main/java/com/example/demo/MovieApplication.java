@@ -6,8 +6,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableCaching      // 캐시 활성화
-@EnableScheduling   // 스케줄링 활성화
+//@EnableScheduling   // 스케줄링 활성화
 public class MovieApplication {
 
 	public static void main(String[] args) {

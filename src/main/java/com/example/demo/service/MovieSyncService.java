@@ -125,4 +125,24 @@ public class MovieSyncService {
 
         log.info("Movie sync completed. year={}, totalCount={}", year, total);
     }
+    public void syncMoviesByDay(String releaseDts, String releaseDte) {
+        int listCount = 500;
+        int startCount = 0;
+        int total = 0;
+
+        log.info("Starting movie sync. releaseDts={}, releaseDte={}", releaseDts, releaseDte);
+
+        while (true) {
+            List<KmdbMovieDto> movies = kmdbAdapter.searchMovies(releaseDts, releaseDte, listCount, startCount);
+            if (movies.isEmpty()) break;
+
+            saveMovies(movies);
+            total += movies.size();
+            startCount += listCount;
+
+            log.info("Movie batch saved. batchSize={}, totalSaved={}", movies.size(), total);
+        }
+
+        log.info("Movie sync completed. releaseDts={}, releaseDte={}, totalCount={}", releaseDts, releaseDte, total);
+    }
 }

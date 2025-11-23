@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 @Profile("local")  // local 프로파일에서만 실행

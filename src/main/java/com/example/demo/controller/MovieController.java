@@ -2,12 +2,14 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.movie.DailyBoxOfficeResponse;
 import com.example.demo.dto.movie.MovieResponseDto;
+import com.example.demo.entity.MovieEntity;
 import com.example.demo.service.MovieService;
 import com.example.demo.service.MovieSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,15 +38,14 @@ public class MovieController {
         return ResponseEntity.ok(movieService.getUpcoming(page, size));
     }
 
-    @GetMapping("/box-office/daily")
+    @GetMapping("/boxoffice/daily")
     public DailyBoxOfficeResponse getDailyBoxOffice() {
         log.info("GET /api/movies/box-office/daily 요청");
         return movieService.getDailyBoxOfficeWithMovieInfo();
     }
 
-    @GetMapping("/search/db")
-    public List<MovieResponseDto> searchMovieFromDb(@RequestParam String title) {
+    @GetMapping("/search")
+    public List<MovieResponseDto> searchMovies(@RequestParam String title) {
         return movieService.findMoviesByTitle(title);
     }
-
 }
