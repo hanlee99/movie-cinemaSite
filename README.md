@@ -2,6 +2,8 @@
 
 > 실시간 박스오피스와 영화 정보를 한눈에 확인할 수 있는 영화 정보 통합 서비스
 
+🔗 **[배포 사이트](https://movie-cinemasite.onrender.com/)** | 📂 **[GitHub](https://github.com/hanlee99/movie-cinemaSite)**
+
 ---
 
 ## 📌 프로젝트 소개
@@ -13,7 +15,7 @@
 - 🎬 **일일 박스오피스** - KOBIS API를 통한 실시간 순위 제공
 - 📽️ **영화 상세 정보** - KMDB API 연동으로 포스터, 줄거리, 출연진 정보 제공
 - 🏢 **전국 극장 정보** - 공공데이터포털의 영화상영관 표준데이터 활용
-- 🔄 **자동 데이터 동기화** - Spring @Scheduled를 통한 일일 자동 갱신
+- 🔍 **영화 검색** - 제목 기반 실시간 검색
 
 ### 아키텍처
 - **백엔드**: Spring Boot에서 외부 API 호출 및 데이터 가공
@@ -35,27 +37,37 @@
 | **Frontend** | Thymeleaf, TailwindCSS, DaisyUI, JavaScript (ES6+) |
 | **Database** | PostgreSQL (Production), H2 (Development) |
 | **Build Tool** | Gradle |
-| **External APIs** | KOBIS API, KMDB API, Kakao Map API |
+| **External APIs** | KOBIS API, KMDB API |
+| **Security** | Spring Security, Bucket4j (Rate Limiting) |
+| **Caching** | Caffeine Cache |
 
 ---
 
-## 🚀 실행 방법
+## 🚀 배포 & 실행 방법
 
-### 1. 레포지토리 클론
+### 온라인 접속 (배포 버전)
+🔗 **https://movie-cinemasite.onrender.com/**
+- PostgreSQL 기반 운영 중
+- 2025년 영화 데이터 기반
+- 즉시 접속 가능
+
+### 로컬 실행 (개발 환경)
+
+#### 1. 레포지토리 클론
 ```bash
 git clone https://github.com/hanlee99/movie-cinemaSite.git
 cd movie-cinemaSite
 ```
 
-### 2. 환경변수 설정
+#### 2. 환경변수 설정
 
-#### Windows
+**Windows**
 ```bash
 setx KOBIS_API_KEY "발급받은_KOBIS_API키"
 setx KMDB_API_KEY "발급받은_KMDB_API키"
 ```
 
-#### macOS / Linux
+**macOS / Linux**
 ```bash
 export KOBIS_API_KEY="발급받은_KOBIS_API키"
 export KMDB_API_KEY="발급받은_KMDB_API키"
@@ -67,7 +79,7 @@ api.kobis.key=발급받은_KOBIS_API키
 api.kmdb.key=발급받은_KMDB_API키
 ```
 
-### 3. 애플리케이션 실행
+#### 3. 애플리케이션 실행
 ```bash
 # Gradle 사용
 ./gradlew bootRun
@@ -77,7 +89,7 @@ api.kmdb.key=발급받은_KMDB_API키
 java -jar build/libs/demo-0.0.1-SNAPSHOT.jar
 ```
 
-### 4. 접속
+#### 4. 접속
 ```
 http://localhost:8080
 ```
@@ -88,7 +100,7 @@ http://localhost:8080
 
 ### 1. 일일 박스오피스
 - KOBIS API를 통한 실시간 박스오피스 순위 제공
-- Spring Cache 적용으로 불필요한 API 호출 최소화 (1일 캐싱)
+- Spring Cache 적용으로 불필요한 API 호출 최소화 (1일 TTL)
 - 순위, 관객수, 매출액 정보 표시
 
 ### 2. 영화 정보 통합
@@ -96,17 +108,18 @@ http://localhost:8080
 - 감독, 배우, 장르, 줄거리 등 상세 정보 제공
 - DB 우선 검색 → KMDB API Fallback 전략
 
-### 3. 현재 상영작 / 개봉 예정작
+### 3. 영화 검색
+- 제목 기반 실시간 검색 기능
+- JPA LIKE 쿼리로 빠른 검색
+- 검색 결과 페이징 처리
+
+### 4. 현재 상영작 / 개봉 예정작
 - 페이징 처리로 대용량 데이터 효율적 조회
 - 개봉일 기준 자동 분류
 
-### 4. 전국 극장 정보
+### 5. 전국 극장 정보
 - 공공데이터포털의 500+ 극장 정보 제공
 - 브랜드별, 지역별 필터링 지원
-
-### 5. 자동 데이터 동기화
-- Spring @Scheduled를 통한 일일 박스오피스 자동 갱신
-- 중복 체크 및 증분 업데이트 로직
 
 ---
 
@@ -127,10 +140,10 @@ demo/
 │   │   │   │   ├── adapter/        # API 어댑터
 │   │   │   │   ├── kobis/          # KOBIS API Client
 │   │   │   │   └── kmdb/           # KMDB API Client
-│   │   │   ├── mapper/             # Entity ↔ DTO 변환(kmdb내부dto를 영화와 영화로 변환)
+│   │   │   ├── mapper/             # Entity ↔ DTO 변환
 │   │   │   ├── exception/          # 예외 처리
 │   │   │   ├── config/             # Spring 설정
-│   │   │   └── scheduler/          # 배치 작업
+│   │   │   └── interceptor/        # Rate Limiting
 │   │   └── resources/
 │   │       ├── data/               # 초기 데이터 (CSV)
 │   │       ├── templates/          # Thymeleaf 템플릿
@@ -162,15 +175,52 @@ External APIs              PostgreSQL Database
 
 ---
 
+## 📊 데이터 규모
+
+- **영화 수**: 2,025건 (2025년 기준)
+- **극장 수**: 500+ (전국)
+- **응답 시간**: 1~5ms (데이터베이스 조회)
+- **API 매칭률**: 95.7% (KOBIS ↔ KMDB)
+- **데이터 전송량**: ~4.1MB
+
+---
+
 ## 📡 API 명세
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
+| GET | `/` | 메인 페이지 (Thymeleaf) | - |
+| GET | `/movies/{id}` | 영화 상세 정보 | id |
+| GET | `/movies/search` | 영화 검색 | keyword |
 | GET | `/movie/box-office/daily` | 일일 박스오피스 조회 | - |
 | GET | `/movie/now-playing` | 현재 상영작 목록 | page, size |
 | GET | `/movie/upcoming` | 개봉 예정작 목록 | page, size |
-| GET | `/movie/search/db` | DB 내부 영화 검색 | title |
-| GET | `/` | 메인 페이지 (Thymeleaf) | - |
+
+---
+
+## 🔐 보안 구현
+
+- **Spring Security**: 관리자 페이지 Basic Authentication
+- **Rate Limiting**: Bucket4j로 API 분당 20회 제한 (API 남용 방지)
+- **환경변수 관리**: API 키는 `.env`와 환경변수로 보호
+- **SQL Injection 방지**: JPA PreparedStatement 사용
+- **CORS 설정**: 필요한 도메인만 허용
+
+---
+
+## 🚀 배포 환경
+
+- **Platform**: [Render](https://render.com/) (무료 Tier)
+- **Database**: PostgreSQL (무료 Tier)
+- **Runtime**: Docker
+- **CI/CD**: GitHub 자동 연동 (main 브랜치 푸시 시 자동 배포)
+- **Status**: 운영 중 ✅
+
+### 데이터 동기화 전략
+
+- **KOBIS API**: 요청 시마다 실시간 조회 (Caffeine 캐싱으로 1일 TTL)
+- **KMDB API**: 초기 배포 시 일괄 동기화, 관리자 API를 통한 수동 갱신 가능
+- **극장 정보**: 공공데이터포털 기반 정적 데이터
 
 ---
 
@@ -200,15 +250,20 @@ open build/reports/jacoco/test/html/index.html
 **해결**: 예외 처리 + DB에 저장된 최근 데이터 제공 (Fallback)  
 **결과**: 서비스 가용성 향상
 
+### 3. N+1 쿼리 문제 해결
+**문제**: 영화 상세 페이지에서 출연진 조회 시 N+1 쿼리 발생  
+**해결**: LEFT JOIN FETCH를 활용한 별도 메서드 구현  
+**결과**: 데이터베이스 쿼리 수 3~4회로 최적화
+
 ---
 
 ## 📝 향후 개선 계획
 
-- [ ] 테스트 커버리지 80% 달성
-- [ ] API 문서 자동화 (Swagger/SpringDoc)
+- [ ] Swagger/SpringDoc을 통한 API 문서화
 - [ ] Redis 캐싱 레이어 구현
-- [ ] Docker 컨테이너화 및 배포 자동화
-- [ ] 위치 기반 극장 검색 기능 완성 (좌표 변환 EPSG5174)
+- [ ] GitHub Actions를 통한 자동 데이터 동기화
+- [ ] 사용자 인증 및 찜하기 기능
+- [ ] 위치 기반 극장 검색 완성 (좌표 변환 EPSG:5174)
 
 ---
 
