@@ -45,6 +45,10 @@
 
 ## 🚀 배포 & 실행 방법
 
+### ⚠️ 첫 접속 시 안내
+무료 호스팅(Render Free Tier) 사용으로 **첫 방문 시 2-3분** 소요될 수 있습니다.  
+서버가 활성화되면 평균 응답 속도는 **1초 이내**입니다.
+
 ### 온라인 접속 (배포 버전)
 🔗 **https://movie-cinemasite.onrender.com/**
 - PostgreSQL 기반 운영 중
@@ -142,8 +146,7 @@ demo/
 │   │   │   │   └── kmdb/           # KMDB API Client
 │   │   │   ├── mapper/             # Entity ↔ DTO 변환
 │   │   │   ├── exception/          # 예외 처리
-│   │   │   ├── config/             # Spring 설정
-│   │   │   └── interceptor/        # Rate Limiting
+│   │   │   └── config/             # Spring 설정
 │   │   └── resources/
 │   │       ├── data/               # 초기 데이터 (CSV)
 │   │       ├── templates/          # Thymeleaf 템플릿
@@ -214,6 +217,25 @@ External APIs              PostgreSQL Database
 
 ---
 
+## 🎯 기술적 의사결정
+
+### PostgreSQL 선택 이유
+- 배포 환경(Render) 무료 PostgreSQL 지원
+- H2보다 안정적인 운영 환경
+- 실무 스택 경험 축적
+
+### Service 계층 분리 (CQRS)
+- **MovieService**: 조회 전용 (`@Transactional(readOnly=true)`)
+- **MovieSyncService**: 수정/동기화 전용
+- 성능 최적화 및 책임 분리
+
+### Adapter Pattern 적용
+- 외부 API 변경에 대한 영향 최소화
+- Service 계층의 외부 의존성 제거
+- 테스트 용이성 향상
+
+---
+
 ## 🔧 트러블슈팅
 
 ### 1. 한글 인코딩 문제 (UTF-8 디코딩)
@@ -257,7 +279,10 @@ External APIs              PostgreSQL Database
 # 리포트 확인
 open build/reports/jacoco/test/html/index.html
 ```
-
+### 테스트 구성
+- **Service 계층 테스트**: MovieService 핵심 로직 검증
+- **통합 테스트**: 외부 API 연동 확인
+- **Entity 매핑 테스트**: DTO 변환 검증
 ---
 
 ## 📝 향후 개선 계획

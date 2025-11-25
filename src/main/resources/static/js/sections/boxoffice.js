@@ -54,13 +54,13 @@ export function initBoxoffice() {
       const figure = document.createElement("figure");
       const img = document.createElement("img");
 
-      const link = document.createElement("a");  // ✅ 추가
-      link.href = `/movies/${m.id}`;              // ✅ 추가
+      const link = document.createElement("a");
+      link.href = `/movies/${m.id}`;
 
       img.src = m.poster || (m.posters?.split("|")[0]) || "/images/irani12.png";
       img.alt = m.title;
-      link.appendChild(img);                      // ✅ 변경 (figure → link)
-      figure.appendChild(link);                   // ✅ 변경 (img → link)
+      link.appendChild(img);
+      figure.appendChild(link);
 
       const body = document.createElement("div");
       body.className = "card-body p-4 text-center";
@@ -110,10 +110,8 @@ export function initBoxoffice() {
             console.error(`${type} 데이터가 없습니다`);
             movies = [];
         } else if (type === "daily") {
-            // daily는 { movies: [...] } 구조
             movies = Array.isArray(data.movies) ? data.movies : [];
         } else {
-            // nowPlaying, upcoming은 { content: [...] } 구조
             movies = Array.isArray(data.content) ? data.content : [];
         }
     slides = makeSlides(movies.length);
@@ -148,14 +146,14 @@ export function initBoxoffice() {
     upcoming: document.getElementById("btnUpcoming"),
   };
 
-  btns.daily?.addEventListener("click", () => switchTo("daily", daily, "일간 박스오피스", false));
+  btns.daily?.addEventListener("click", () => switchTo("daily", daily, "일별 박스오피스", false));
   btns.now?.addEventListener("click", () => switchTo("now", nowPlaying, "최근 개봉 영화", true));
   btns.upcoming?.addEventListener("click", () => switchTo("upcoming", upcoming, "상영 예정 영화", true));
 
   nextBtn?.addEventListener("click", () => move(1));
   prevBtn?.addEventListener("click", () => move(-1));
 
-  switchTo("daily", daily, "일간 박스오피스", false);
+  switchTo("daily", daily, "일별 박스오피스", false);
 
   listViewBtn?.addEventListener("click", () => {
     isListView = true;

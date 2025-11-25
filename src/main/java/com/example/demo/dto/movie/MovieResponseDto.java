@@ -48,7 +48,7 @@ public class MovieResponseDto {
                 .genre(entity.getGenre())
                 .poster(entity.getPoster())
                 .rating(entity.getRating())
-                .repRlsDate(entity.getRepRlsDate())
+                .repRlsDate(formatDate(entity.getRepRlsDate()))
                 .build();
     }
 
@@ -62,7 +62,7 @@ public class MovieResponseDto {
                 .rating(entity.getRating())
                 .nation(entity.getNation())
                 .prodYear(entity.getProdYear())
-                .repRlsDate(entity.getRepRlsDate())
+                .repRlsDate(formatDate(entity.getRepRlsDate()))
                 .poster(entity.getPoster())
                 .plot(entity.getPlot())
                 .runtime(entity.getRuntime())
@@ -84,6 +84,15 @@ public class MovieResponseDto {
     private static List<String> splitByPipe(String str) {
         if (str == null || str.isBlank()) return null;
         return Arrays.asList(str.split("\\|"));
+    }
+
+    private static String formatDate(String yyyymmdd) {
+        if (yyyymmdd == null || yyyymmdd.length() != 8) {
+            return yyyymmdd; // 포맷 불가능하면 원본 반환
+        }
+        return yyyymmdd.substring(0, 4) + "-" +
+                yyyymmdd.substring(4, 6) + "-" +
+                yyyymmdd.substring(6, 8);
     }
 
     // ✅ PersonDto

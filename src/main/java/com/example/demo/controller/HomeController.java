@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.awt.*;
 import java.util.List;
 
 @Controller
@@ -32,7 +33,7 @@ public class HomeController {
     public String movieDetail(@PathVariable Long id, Model model) {
         log.info("영화 상세 페이지 요청 - id: {}", id);
 
-        MovieEntity movie = movieService.findByIdWithPeople(id);
+        MovieResponseDto movie = movieService.getMovieDetail(id);
         model.addAttribute("movie", movie);
 
         return "detail";

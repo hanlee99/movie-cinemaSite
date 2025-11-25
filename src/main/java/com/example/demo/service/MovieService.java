@@ -6,6 +6,7 @@ import com.example.demo.dto.movie.boxoffice.BoxOfficeItemDto;
 import com.example.demo.dto.movie.boxoffice.DailyBoxOfficeResultDto;
 import com.example.demo.entity.MovieEntity;
 
+import com.example.demo.exception.MovieNotFoundException;
 import com.example.demo.repository.MovieRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,12 +33,17 @@ public class MovieService {
 
     public MovieEntity findById(Long id) {
         return movieRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("영화를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new MovieNotFoundException(id));
     }
 
     public MovieEntity findByIdWithPeople(Long id) {
         return movieRepository.findByIdWithPeople(id)  // people 가져옴 (상세용)
-                .orElseThrow(() -> new RuntimeException("영화를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new MovieNotFoundException(id));
+    }
+
+    public MovieResponseDto getMovieDetail(Long id) {
+        MovieEntity entity = findByIdWithPeople(id);
+        return MovieResponseDto.from(entity);
     }
 
     public List<MovieResponseDto> findMoviesByTitle(String title) {
