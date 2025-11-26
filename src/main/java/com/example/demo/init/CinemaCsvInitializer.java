@@ -1,5 +1,7 @@
 package com.example.demo.init;
 
+import com.example.demo.dto.cinema.CinemaCSV;
+import com.example.demo.dto.cinema.SpecialtyCSV;
 import com.example.demo.entity.BrandEntity;
 import com.example.demo.entity.CinemaEntity;
 import com.example.demo.entity.RegionEntity;
@@ -8,161 +10,222 @@ import com.example.demo.repository.BrandRepository;
 import com.example.demo.repository.CinemaRepository;
 import com.example.demo.repository.RegionRepository;
 import com.example.demo.repository.SpecialtyTheaterRepository;
+import com.opencsv.bean.CsvToBeanBuilder;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import com.opencsv.CSVReader;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
-import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-//@Component
-@Profile("local")  // local 프로파일에서만 실행
+@Slf4j
+@Component
+@Profile("local")
 @RequiredArgsConstructor
-public class CinemaCsvInitializer  {
+public class CinemaCsvInitializer {
 
-    /*private final BrandRepository brandRepository;
-    private final RegionRepository regionRepository;
     private final CinemaRepository cinemaRepository;
+    private final BrandRepository brandRepository;
+    private final RegionRepository regionRepository;
     private final SpecialtyTheaterRepository specialtyTheaterRepository;
-implements CommandLineRunner
-    @Override
+
+    @PostConstruct
     @Transactional
-    public void run(String... args) throws Exception {
-
+    public void init() {
         if (cinemaRepository.count() > 0) {
-            System.out.println("🎦 기존 Cinema 데이터가 존재하므로 CSV 로드를 건너뜁니다.");
-            return;
-        }
-        System.out.println("CSV 데이터 로드 시작...");
-
-        // 1️⃣ 조인 테이블(관계) 먼저 삭제 — JPA 방식
-        cinemaRepository.findAll()
-                .forEach(cinema -> cinema.getSpecialtyTheaterEntities().clear());
-
-        // 2️⃣ 관련 엔티티 순서대로 삭제 (외래키 역순)
-        specialtyTheaterRepository.deleteAll();
-        cinemaRepository.deleteAll();
-        regionRepository.deleteAll();
-        brandRepository.deleteAll();
-
-        var inputStream = getClass().getResourceAsStream("/data/cinema-data.csv");
-        if (inputStream == null) {
-            throw new IllegalStateException("CSV 파일을 찾을 수 없습니다! (경로 확인: /data/cinema-data.csv)");
-        }
-        System.out.println("CSV 파일 로드 성공!");
-
-        // resources 폴더의 CSV 파일 읽기
-        try (CSVReader reader = new CSVReader(
-                new InputStreamReader(
-                        getClass().getResourceAsStream("/data/cinema-data.csv"),
-                        StandardCharsets.UTF_8
-                ))) {
-
-            reader.readNext(); // 첫 줄(헤더) 건너뛰기
-            String[] parts;
-            while ((parts = reader.readNext()) != null) {
-                if (parts.length < 10) continue;
-
-                String cinemaName = parts[0].trim();
-                String brandName = parts[1].trim();
-                String businessStatus = parts[2].trim();
-                String classificationRegion = parts[3].trim();
-                String regionalLocal = parts[4].trim();
-                String basicLocal = parts[5].trim();
-                String streetAddress = parts[6].trim();
-                String loadAddress = parts[7].trim();
-                String xStr = parts[8].replaceAll("[^0-9.]", "").trim(); // x
-                String yStr = parts[9].replaceAll("[^0-9.]", "").trim(); // y
-
-                if (xStr.isEmpty() || yStr.isEmpty()) {
-                    System.out.println("좌표 누락: " + cinemaName + " → 스킵");
-                    continue;
-                }
-
-                BigDecimal longitude = new BigDecimal(xStr);
-                BigDecimal latitude = new BigDecimal(yStr);
-
-                // 브랜드 중복 체크 후 저장
-                BrandEntity brandEntity = brandRepository.findAll()
-                        .stream()
-                        .filter(b -> b.getName().equals(brandName))
-                        .findFirst()
-                        .orElseGet(() -> brandRepository.save(new BrandEntity(null, brandName)));
-
-                // 지역 중복 체크 후 저장
-                RegionEntity regionEntity = regionRepository.findAll()
-                        .stream()
-                        .filter(r -> r.getRegionalLocal().equals(regionalLocal) && r.getBasicLocal().equals(basicLocal))
-                        .findFirst()
-                        .orElseGet(() -> regionRepository.save(new RegionEntity(null, regionalLocal, basicLocal)));
-
-                // 영화관 저장
-                CinemaEntity cinemaEntity = new CinemaEntity();
-                cinemaEntity.setCinemaName(cinemaName);
-                cinemaEntity.setBusinessStatus(businessStatus);
-                cinemaEntity.setClassificationRegion(classificationRegion);
-                cinemaEntity.setStreetAddress(streetAddress);
-                cinemaEntity.setLoadAddress(loadAddress);
-                cinemaEntity.setLatitude(latitude);
-                cinemaEntity.setLongitude(longitude);
-                cinemaEntity.setBrandEntity(brandEntity);
-                cinemaEntity.setRegionEntity(regionEntity);
-                cinemaRepository.save(cinemaEntity);
-            }
-        }
-        System.out.println("CSV 데이터 500행 로드 완료!");
-
-        System.out.println("🎬 특별관 CSV 로드 시작...");
-
-        var specialStream = getClass().getResourceAsStream("/data/specialty-theater.csv");
-        if (specialStream == null) {
-            System.out.println("⚠️ specialty-theater.csv 파일이 없습니다. 건너뜁니다.");
+            log.info("데이터가 이미 존재합니다.");
             return;
         }
 
-        try (CSVReader specialReader = new CSVReader(
-                new InputStreamReader(specialStream, StandardCharsets.UTF_8))) {
+        try {
+            initBrands();
+            initRegions();
+            initCinemas();
+            initSpecialtyMappings();
 
-            specialReader.readNext(); // 헤더 건너뛰기
-            String[] row;
+            log.info("모든 데이터 초기화 완료!");
 
-            while ((row = specialReader.readNext()) != null) {
-                if (row.length < 3) continue;
+        } catch (Exception e) {
+            log.error("초기화 실패", e);
+        }
+    }
 
-                String brandName = row[0].trim();
-                String specialtyName = row[1].trim();
-                String cinemaName = row[2].trim();
+    private void initBrands() {
+        if (brandRepository.count() == 0) {
+            brandRepository.save(new BrandEntity(null, "CGV"));
+            brandRepository.save(new BrandEntity(null, "롯데시네마"));
+            brandRepository.save(new BrandEntity(null, "메가박스"));
+            log.info("브랜드 3개 저장 완료");
+        }
+    }
 
-                // 브랜드 찾기
-                BrandEntity brandEntity = brandRepository.findByName(brandName)
-                        .orElseThrow(() -> new IllegalStateException("❌ 브랜드 없음: " + brandName));
+    private void initRegions() throws Exception {
+        log.info("지역 데이터 생성 중...");
+        ClassPathResource resource = new ClassPathResource("data/cinema_data.csv");
+        InputStream inputStream = resource.getInputStream();
 
-                // 특별관 찾기 or 생성
-                SpecialtyTheaterEntity theater = specialtyTheaterRepository
-                        .findByNameAndBrand_Name(specialtyName, brandName)
-                        .orElseGet(() -> specialtyTheaterRepository.save(
-                                SpecialtyTheaterEntity.builder()
-                                        .name(specialtyName)
-                                        .brandEntity(brandEntity)
-                                        .build()
-                        ));
+        List<CinemaCSV> csvList = new CsvToBeanBuilder<CinemaCSV>(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .withType(CinemaCSV.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build().parse();
 
-                // 영화관 찾기 후 연결
-                cinemaRepository.findByCinemaNameAndBrand_Name(cinemaName, brandName)
-                        .ifPresentOrElse((CinemaEntity cinemaEntity) -> {
-                            cinemaEntity.getSpecialtyTheaterEntities().add(theater);
-                            cinemaRepository.save(cinemaEntity);
-                            System.out.printf("✅ [%s - %s] 연결 완료%n", specialtyName, cinemaName);
-                        }, () -> System.out.printf("⚠️ 영화관 [%s] 을 찾을 수 없습니다.%n", cinemaName));
+        // 중복 제거하고 Region 생성
+        Set<String> regionSet = new HashSet<>();
+        for (CinemaCSV csv : csvList) {
+            if (csv.getRegionalLocal() != null && csv.getBasicLocal() != null) {
+                String key = csv.getRegionalLocal() + "|" + csv.getBasicLocal();
+                regionSet.add(key);
             }
         }
-        System.out.println("🎉 특별관 CSV 데이터 로드 완료!");
-    }*/
+
+        int savedCount = 0;
+        for (String regionKey : regionSet) {
+            String[] parts = regionKey.split("\\|");
+            RegionEntity region = new RegionEntity();
+            region.setRegionalLocal(parts[0]);
+            region.setBasicLocal(parts[1]);
+            regionRepository.save(region);
+            savedCount++;
+        }
+
+        log.info("지역 {}개 저장 완료", savedCount);
+    }
+
+    private void initCinemas() throws Exception {
+        log.info("영화관 데이터 로딩 중...");
+        ClassPathResource resource = new ClassPathResource("data/cinema_data.csv");
+        InputStream inputStream = resource.getInputStream();
+
+        List<CinemaCSV> csvList = new CsvToBeanBuilder<CinemaCSV>(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .withType(CinemaCSV.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build().parse();
+
+        log.info("CSV 파싱 완료: {}개", csvList.size());
+
+        int savedCount = 0;
+
+        for (CinemaCSV csv : csvList) {
+            if (csv.getCinemaName() == null || csv.getCinemaName().trim().isEmpty()) {
+                continue;
+            }
+
+            CinemaEntity cinema = new CinemaEntity();
+            cinema.setCinemaName(csv.getCinemaName().trim());
+            cinema.setBusinessStatus(csv.getBusinessStatus());
+            cinema.setClassificationRegion(csv.getClassificationRegion());
+            cinema.setLoadAddress(csv.getLoadAddress());
+            cinema.setStreetAddress(csv.getStreetAddress());
+
+            if (csv.getXEpsg5174() != null) {
+                cinema.setXEpsg5174(BigDecimal.valueOf(csv.getXEpsg5174()));
+            }
+            if (csv.getYEpsg5174() != null) {
+                cinema.setYEpsg5174(BigDecimal.valueOf(csv.getYEpsg5174()));
+            }
+
+            // Brand 설정
+            brandRepository.findByName(csv.getBrandName())
+                    .ifPresent(cinema::setBrandEntity);
+
+            // Region 설정
+            if (csv.getRegionalLocal() != null && csv.getBasicLocal() != null) {
+                regionRepository.findByRegionalLocalAndBasicLocal(
+                        csv.getRegionalLocal(),
+                        csv.getBasicLocal()
+                ).ifPresent(cinema::setRegionEntity);
+            }
+
+            cinemaRepository.save(cinema);
+            savedCount++;
+        }
+
+        log.info("영화관 {}개 저장 완료", savedCount);
+    }
+
+    private void initSpecialtyMappings() throws Exception {
+        log.info("특별관 데이터 매핑 중...");
+        ClassPathResource resource = new ClassPathResource("data/specialty_theater.csv");
+
+        InputStream inputStream = resource.getInputStream();
+
+        List<SpecialtyCSV> specialList = new CsvToBeanBuilder<SpecialtyCSV>(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .withType(SpecialtyCSV.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build().parse();
+
+        log.info("특별관 CSV 파싱 완료: {}개", specialList.size());
+
+        // 영화관 Map 생성
+        Map<String, CinemaEntity> cinemaMap = cinemaRepository.findAllWithBrand().stream()
+                .filter(c -> c.getBrandEntity() != null && c.getCinemaName() != null)
+                .collect(Collectors.toMap(
+                        c -> c.getBrandEntity().getName().trim() + "_" + c.getCinemaName().trim(),
+                        c -> c,
+                        (existing, replacement) -> existing
+                ));
+
+        log.info("DB에 {}개의 영화관 로드 완료", cinemaMap.size());
+
+        int matchedCount = 0;
+        int unmatchedCount = 0;
+
+        for (SpecialtyCSV csv : specialList) {
+            String brandName = csv.getBrandName() != null ? csv.getBrandName().trim() : "";
+            String specialtyName = csv.getSpecialtyName() != null ? csv.getSpecialtyName().trim() : "";
+            String cinemaName = csv.getCinemaName() != null ? csv.getCinemaName().trim() : "";
+
+            if (brandName.isEmpty() || specialtyName.isEmpty() || cinemaName.isEmpty()) {
+                log.warn("빈 데이터 스킵: brand={}, specialty={}, cinema={}",
+                        brandName, specialtyName, cinemaName);
+                continue;
+            }
+
+            // 특별관 생성/조회
+            BrandEntity brand = brandRepository.findByName(brandName).orElse(null);
+
+            SpecialtyTheaterEntity specialty = specialtyTheaterRepository
+                    .findByName(specialtyName)
+                    .orElseGet(() -> specialtyTheaterRepository.save(
+                            SpecialtyTheaterEntity.builder()
+                                    .name(specialtyName)
+                                    .brandEntity(brand)
+                                    .build()
+                    ));
+
+            // 영화관 찾기
+            String key = brandName + "_" + cinemaName;
+            CinemaEntity cinema = cinemaMap.get(key);
+
+            if (cinema != null) {
+                cinema.getSpecialtyTheaterEntities().add(specialty);
+                matchedCount++;
+            } else {
+                unmatchedCount++;
+                log.warn("매칭 실패: key='{}' (brand='{}', cinema='{}')",
+                        key, brandName, cinemaName);
+            }
+        }
+
+        cinemaRepository.saveAll(cinemaMap.values());
+
+        log.info("특별관 매핑 완료! 성공: {}, 실패: {}", matchedCount, unmatchedCount);
+    }
 }
 

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -92,50 +93,76 @@ public class MovieService {
         // 1. 박스오피스 정보 (캐시)
         DailyBoxOfficeResultDto boxOffice = boxOfficeService.getDailyBoxOffice();
 
-        // 2. 제목 리스트 추출
-        List<String> titles = boxOffice.getDailyBoxOfficeList().stream()
-                .map(BoxOfficeItemDto::getTitle)
-                .toList();
-        log.debug("박스오피스 제공 제목들: {}", titles);
+        // 2. 영화 정보 매칭 (제목 리스트 추출 부분 삭제)
+        Map<String, MovieEntity> movieMap = matchMovies(boxOffice.getDailyBoxOfficeList());
 
-        // 3. 영화 정보 매칭
-        Map<String, MovieEntity> movieMap = matchMovies(titles);
-
-        // 4. 응답 생성
+        // 3. 응답 생성
         DailyBoxOfficeResponse response = DailyBoxOfficeResponse.from(boxOffice, movieMap);
         log.info("박스오피스 영화 정보 조회 완료 - {}건", response.getMovies().size());
 
         return response;
     }
 
-    private Map<String, MovieEntity> matchMovies(List<String> titles) {
-        // 1차: 정확 매칭 (1번 쿼리)
+    private Map<String, MovieEntity> matchMovies(List<BoxOfficeItemDto> boxOfficeItems) {
+        List<String> titles = boxOfficeItems.stream()
+                .map(BoxOfficeItemDto::getTitle)
+                .toList();
+
+        Map<String, LocalDate> titleToOpenDt = boxOfficeItems.stream()  // String -> LocalDate
+                .collect(Collectors.toMap(
+                        BoxOfficeItemDto::getTitle,
+                        BoxOfficeItemDto::getOpenDt,
+                        (v1, v2) -> v1
+                ));
+
+        log.debug("박스오피스 제공 제목들: {}", titles);
+
+        // 1차: 정확 매칭
         List<MovieEntity> exactMatches = movieRepository.findByTitleIn(titles);
         Map<String, MovieEntity> movieMap = exactMatches.stream()
-                .collect(Collectors.toMap(MovieEntity::getTitle, m -> m));
+                .collect(Collectors.toMap(
+                        MovieEntity::getTitle,
+                        m -> m,
+                        (m1, m2) -> selectClosestByYear(m1, m2, titleToOpenDt.get(m1.getTitle()))  // LocalDate.parse() 제거
+                ));
 
         log.debug("정확 매칭: {}건 / {}건", movieMap.size(), titles.size());
 
-        // 2차: 안 된 것만 LIKE 검색
-        for (String title : titles) {
-            if (movieMap.containsKey(title)) {
-                continue;  // 이미 매칭됨
-            }
+        // 2차: LIKE 검색
+        for (BoxOfficeItemDto item : boxOfficeItems) {
+            if (movieMap.containsKey(item.getTitle())) continue;
 
-            // 공백 제거하고 검색
-            String normalized = title.replaceAll("\\s+", "");
+            String normalized = item.getTitle().replaceAll("\\s+", "");
             List<MovieEntity> found = movieRepository.findByTitleContains(normalized);
 
             if (!found.isEmpty()) {
-                movieMap.put(title, found.get(0));
-                log.debug("LIKE 매칭 성공: {}", title);
+                MovieEntity best = found.stream()
+                        .min(Comparator.comparingInt(m ->
+                                yearDiff(m.getRepRlsDate(), item.getOpenDt())))
+                        .get();
+                movieMap.put(item.getTitle(), best);
+                log.debug("LIKE 매칭: {}", item.getTitle());
             } else {
-                log.warn("매칭 실패: {}", title);
+                log.warn("매칭 실패: {}", item.getTitle());
             }
         }
 
         log.debug("최종 매칭: {}건 / {}건", movieMap.size(), titles.size());
         return movieMap;
+    }
+
+    private MovieEntity selectClosestByYear(MovieEntity m1, MovieEntity m2, LocalDate openDt) {
+        int diff1 = yearDiff(m1.getRepRlsDate(), openDt);
+        int diff2 = yearDiff(m2.getRepRlsDate(), openDt);
+        log.warn("중복: {} | KOBIS: {} | DB1: {} | DB2: {}",
+                m1.getTitle(), openDt, m1.getRepRlsDate(), m2.getRepRlsDate());
+        return diff1 <= diff2 ? m1 : m2;
+    }
+
+    private int yearDiff(String repRlsDate, LocalDate kobisOpenDt) {
+        int year1 = Integer.parseInt(repRlsDate.substring(0, 4));
+        int year2 = kobisOpenDt.getYear();
+        return Math.abs(year1 - year2);
     }
 
 }

@@ -22,7 +22,7 @@ public class MovieSyncRunner implements CommandLineRunner {
         System.out.println("🎬 KMDB 영화 동기화 시작...");
         movieSyncService.syncMoviesByYear(2025);
         System.out.println("✅ 동기화 완료!");
-        movieSyncService.syncMovieByTitle("코렐라인");
+        movieSyncService.syncMovieByTitle("가타카");
 
 
     }

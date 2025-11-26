@@ -18,7 +18,12 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 
     Optional<MovieEntity> findByMovieId(String movieId);
 
-    @Query("SELECT m FROM MovieEntity m LEFT JOIN FETCH m.people WHERE m.id = :id")
+    /*@Query("SELECT m FROM MovieEntity m LEFT JOIN FETCH m.people WHERE m.id = :id")*/
+
+    @Query("SELECT DISTINCT m FROM MovieEntity m " +
+            "LEFT JOIN FETCH m.people mp " +
+            "LEFT JOIN FETCH mp.person " +
+            "WHERE m.id = :id")
     Optional<MovieEntity> findByIdWithPeople(@Param("id") Long id);
 
     // 제목 리스트로 조회

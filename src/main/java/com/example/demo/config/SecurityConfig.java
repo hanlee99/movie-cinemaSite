@@ -26,15 +26,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)  // REST API용 CSRF 비활성화
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")  // 관리자 전용
-                        .requestMatchers("/api/**").permitAll()  // API 공개
-                        .anyRequest().permitAll()  // 나머지 모두 허용
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").permitAll()
+                        .anyRequest().permitAll()
                 )
                 .httpBasic(httpBasic -> httpBasic.realmName("Admin"));
         return http.build();
     }
+
 
     @Bean
     public UserDetailsService userDetailsService() {

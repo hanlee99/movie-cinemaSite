@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Component
 public class KmdbMovieMapper {
@@ -92,15 +93,23 @@ public class KmdbMovieMapper {
     private List<KmdbPersonDto> extractStaffs(KmdbResponse.Staffs staffs) {
         if (staffs == null || staffs.getStaff() == null) return List.of();
 
-        return staffs.getStaff().stream()
-                .filter(this::isRelevantStaff)
+        // 감독/원작
+        List<KmdbPersonDto> directors = staffs.getStaff().stream()
+                .filter(s -> "감독".equals(s.getStaffRoleGroup())
+                        || "원작".equals(s.getStaffRoleGroup()))
                 .map(this::toPersonDto)
                 .toList();
-    }
 
-    private boolean isRelevantStaff(KmdbResponse.Staff staff) {
-        String role = staff.getStaffRoleGroup();
-        return "출연".equals(role) || "감독".equals(role) || "원작".equals(role);
+        // 출연진 상위 15명
+        List<KmdbPersonDto> actors = staffs.getStaff().stream()
+                .filter(s -> "출연".equals(s.getStaffRoleGroup()))
+                .limit(30)  // 상위 15명만
+                .map(this::toPersonDto)
+                .toList();
+
+        // 합치기
+        return Stream.concat(directors.stream(), actors.stream())
+                .toList();
     }
 
     private KmdbPersonDto toPersonDto(KmdbResponse.Staff staff) {

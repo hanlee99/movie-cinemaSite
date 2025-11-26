@@ -12,6 +12,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "cinema", indexes = {
+        @Index(name = "idx_cinema_coordinates", columnList = "x_epsg5174, y_epsg5174"),
+        @Index(name = "idx_cinema_brand", columnList = "brand_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,7 +33,7 @@ public class CinemaEntity {
     private String businessStatus;
 
     @Column(length = 50)
-    private String classificationRegion; // ex. 서울 (브랜드 기준 지역명)
+    private String classificationRegion;
 
     @Column(length = 255)
     private String streetAddress;
@@ -37,27 +41,25 @@ public class CinemaEntity {
     @Column(length = 255)
     private String loadAddress;
 
-    @Column(precision = 15, scale = 8)
-    private BigDecimal longitude;
+    @Column(name = "x_epsg5174", precision = 20, scale = 10)
+    private BigDecimal xEpsg5174;
 
-    @Column(precision = 15, scale = 8)
-    private BigDecimal latitude;
+    @Column(name = "y_epsg5174", precision = 20, scale = 10)
+    private BigDecimal yEpsg5174;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private BrandEntity brandEntity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private RegionEntity regionEntity;
 
     @ManyToMany
     @JoinTable(
-            name = "cinema_specialtytheater",  // ✅ 테이블명 통일
+            name = "cinema_specialtytheater",
             joinColumns = @JoinColumn(name = "cinema_id"),
-            inverseJoinColumns = @JoinColumn(name = "specialtytheater_id") // ✅ 컬럼명 통일
+            inverseJoinColumns = @JoinColumn(name = "specialtytheater_id")
     )
     private Set<SpecialtyTheaterEntity> specialtyTheaterEntities = new HashSet<>();
-
-
 }
