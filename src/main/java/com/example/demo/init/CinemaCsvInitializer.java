@@ -14,7 +14,6 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +73,7 @@ public class CinemaCsvInitializer {
 
     private void initRegions() throws Exception {
         log.info("지역 데이터 생성 중...");
-        ClassPathResource resource = new ClassPathResource("data/cinema_data.csv");
+        ClassPathResource resource = new ClassPathResource("datafile/cinema_data.csv");
         InputStream inputStream = resource.getInputStream();
 
         List<CinemaCSV> csvList = new CsvToBeanBuilder<CinemaCSV>(
@@ -107,7 +106,7 @@ public class CinemaCsvInitializer {
 
     private void initCinemas() throws Exception {
         log.info("영화관 데이터 로딩 중...");
-        ClassPathResource resource = new ClassPathResource("data/cinema_data.csv");
+        ClassPathResource resource = new ClassPathResource("datafile/cinema_data.csv");
         InputStream inputStream = resource.getInputStream();
 
         List<CinemaCSV> csvList = new CsvToBeanBuilder<CinemaCSV>(
@@ -173,7 +172,7 @@ public class CinemaCsvInitializer {
 
     private void initSpecialtyMappings() throws Exception {
         log.info("특별관 데이터 매핑 중...");
-        ClassPathResource resource = new ClassPathResource("data/specialty_theater.csv");
+        ClassPathResource resource = new ClassPathResource("datafile/specialty_theater.csv");
 
         InputStream inputStream = resource.getInputStream();
 
