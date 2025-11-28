@@ -34,10 +34,14 @@
         </a>
     </div>
 
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=689744c54653c938e540a3d372cb137a"></script>
+    <script th:src="@{|//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_API_KEY}&autoload=false&libraries=services|}"></script>
 
     <script th:inline="javascript">
+
         /*<![CDATA[*/
+
+        kakao.maps.load(() => {
+
 
         const specialCinemas = /*[[${cinemas}]]*/ [];
 
@@ -255,6 +259,8 @@
         };
 
         map.setBounds(bounds);
+
+        });
 
         /*]]>*/
     </script>

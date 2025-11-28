@@ -5,6 +5,7 @@ import com.example.demo.dto.movie.MovieResponseDto;
 import com.example.demo.service.CinemaService;
 import com.example.demo.service.MovieService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,12 @@ import java.util.List;
 public class HomeController {
     private final MovieService movieService;
     private final CinemaService cinemaService;
+    @Value("${api.kakao.key}")
+    private String kakaoApiKey;
 
     @GetMapping("/")
     public String home(Model model) {
+
 
         model.addAttribute("daily", movieService.getDailyBoxOfficeWithMovieInfo());
         model.addAttribute("nowPlaying", movieService.getNowPlaying(1, 20));
@@ -34,6 +38,8 @@ public class HomeController {
         log.info("특별관 극장 개수: {}", specialCinemas.size());
 
         model.addAttribute("cinemas", specialCinemas);
+        model.addAttribute("KAKAO_API_KEY", kakaoApiKey);
+
 
         return "home";
     }
