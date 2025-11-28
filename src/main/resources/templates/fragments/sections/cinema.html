@@ -1,61 +1,261 @@
-<section th:fragment="cinema" class="flex-1 py-12" xmlns:th="http://www.thymeleaf.org">
-    <!-- 브랜드 탭 -->
+<section th:fragment="cinema" class="special-theater-section" style="margin: 40px 0;"
+         xmlns:th="http://www.thymeleaf.org">
+    <h2 style="font-size: 24px; margin-bottom: 10px; text-align: center;">🎬 특별관 극장 지도</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 20px;">
+        아이맥스, DOLBY CINEMA, 수퍼플렉스 상영 극장
+    </p>
 
-    <h2 class="text-xl font-semibold text-gray-800 mb-6">
-        영화관 찾기
-    </h2>
-
-    <!-- 지역 필터 -->
-    <div class="filter-section">
-        <h3>📍 지역</h3>
-        <div class="filter-chips">
-            <button class="chip" data-region="서울">서울</button>
-            <button class="chip" data-region="경기">경기</button>
-            <button class="chip" data-region="인천">인천</button>
-
-            <button class="chip" data-region="대전/충청/세종">대전/충청/세종</button>
-
-            <button class="chip" data-region="대구/경북">대구/경북</button>
-            <button class="chip" data-region="부산/울산/경남">부산/울산/경남</button>
-
-            <button class="chip" data-region="전라/광주">전라/광주</button>
-
-            <button class="chip" data-region="강원">강원</button>
-            <button class="chip" data-region="제주">제주</button>
-        </div>
+    <!-- 내 주변 찾기 버튼 (NEW) -->
+    <div style="text-align:center; margin-bottom:15px;">
+        <button onclick="findNearby()"
+                style="padding:12px 24px; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; font-size:14px; font-weight:bold;">
+            📍 내 주변 특별관 찾기
+        </button>
     </div>
 
-    <div class="filter-section">
-        <h3 class="text-base font-semibold text-gray-800 mb-4">🏢 브랜드</h3>
-        <div class="filter-chips">
-            <button class="chip active" data-brand="all">전체</button>
-            <button class="chip" data-brand="cgv">CGV</button>
-            <button class="chip" data-brand="megabox">메가박스</button>
-            <button class="chip" data-brand="lotte">롯데시네마</button>
-        </div>
+    <!-- 카카오맵 -->
+    <div id="special-cinema-map" style="width:100%; height:500px; border-radius: 8px; margin-bottom: 15px;"></div>
+
+    <!-- 결과 표시 영역 (NEW) -->
+    <div id="nearby-result"></div>
+
+    <!-- 범례 -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <span style="margin: 0 15px; font-size: 14px;">🔴 아이맥스</span>
+        <span style="margin: 0 15px; font-size: 14px;">🔵 DOLBY CINEMA</span>
+        <span style="margin: 0 15px; font-size: 14px;">🟢 수퍼플렉스</span>
+        <span style="margin: 0 15px; font-size: 14px;">⭐ 내 위치</span>
     </div>
 
-    <!-- 특별관 필터 -->
-    <div class="filter-section">
-        <h3>✨ 특별관</h3>
-        <div class="filter-chips">
-            <button class="chip active" data-special="all">전체</button>
-            <button class="chip" data-special="imax">아이맥스</button>
-            <button class="chip" data-special="4dx">4DX</button>
-
-            <button class="chip" data-special="superFlex">수퍼플렉스</button>
-
-            <button class="chip" data-special="dolbyCinema">DOLBY CINEMA</button>
-        </div>
+    <div style="text-align: center;">
+        <a href="/cinema/list" style="display: inline-block; padding: 12px 24px;
+    background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            전체 극장 보기 →
+        </a>
     </div>
 
-    <!-- 결과-->
-    <div class="theater-results">
-        <div class="theater-card">
-            <h3>CGV 강남 IMAX</h3>
-            <p>📍 서울 강남구 강남대로 456</p>
-            <p>🎬 IMAX, 4DX</p>
-            <button class="btn-primary">예매하기 →</button>
-        </div>
-    </div>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=689744c54653c938e540a3d372cb137a"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        const specialCinemas = /*[[${cinemas}]]*/ [];
+
+        console.log('특별관 극장 개수:', specialCinemas.length);
+
+        // 지도 생성
+        const mapContainer = document.getElementById('special-cinema-map');
+        const mapOption = {
+            center: new kakao.maps.LatLng(37.5665, 126.9780),
+            level: 8
+        };
+        const map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 지도 컨트롤
+        const zoomControl = new kakao.maps.ZoomControl();
+        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+        // 범위 계산
+        const bounds = new kakao.maps.LatLngBounds();
+
+        // 현재 열린 인포윈도우 추적
+        let currentInfowindow = null;
+
+        // 내 위치 마커
+        let myLocationMarker = null;
+
+        function normalizeSpecialties(list) {
+            return Array.isArray(list) ? list : (list ? [list] : []);
+        }
+
+        // 마커 색상 결정
+        function getMarkerColor(specialtyTheaters) {
+            const theaters = normalizeSpecialties(specialtyTheaters).join(',');
+            if (theaters.includes('아이맥스')) return 'red';
+            if (theaters.includes('DOLBY')) return 'blue';
+            return 'green';
+        }
+
+        // SVG 기반 마커 이미지
+        function createMarkerImage(color) {
+            const colorMap = {
+                red: '#ef4444',
+                blue: '#3b82f6',
+                green: '#22c55e',
+                star: '#fbbf24'
+            };
+            const fill = colorMap[color] || colorMap.red;
+
+            const svg = color === 'star'
+                ? `<svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="${fill}" stroke="#fff" stroke-width="1"/>
+                   </svg>`
+                : `<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.163 0 0 7.163 0 16c0 11.25 16 26 16 26s16-14.75 16-26C32 7.163 24.837 0 16 0z" fill="${fill}" />
+                    <circle cx="16" cy="16" r="7" fill="#fff" />
+                   </svg>`;
+
+            const size = color === 'star' ? new kakao.maps.Size(32, 32) : new kakao.maps.Size(32, 42);
+            const offset = color === 'star' ? new kakao.maps.Point(16, 16) : new kakao.maps.Point(16, 42);
+
+            const url = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+            return new kakao.maps.MarkerImage(url, size, {offset: offset});
+        }
+
+        // 거리 계산 (Haversine)
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // 내 주변 극장 찾기
+        window.findNearby = function() {
+            if (!navigator.geolocation) {
+                alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    const myPosition = new kakao.maps.LatLng(lat, lon);
+                    map.setCenter(myPosition);
+                    map.setLevel(6);
+
+                    // 기존 마커 제거
+                    if (myLocationMarker) {
+                        myLocationMarker.setMap(null);
+                    }
+
+                    // 내 위치 마커
+                    myLocationMarker = new kakao.maps.Marker({
+                        position: myPosition,
+                        map: map,
+                        image: createMarkerImage('star'),
+                        title: '내 위치'
+                    });
+
+                    // 거리 계산
+                    const nearby = specialCinemas
+                        .filter(c => c.latitude && c.longitude)
+                        .map(cinema => ({
+                            ...cinema,
+                            distance: getDistance(lat, lon, cinema.latitude, cinema.longitude)
+                        }))
+                        .filter(c => c.distance <= 10)
+                        .sort((a, b) => a.distance - b.distance)
+                        .slice(0, 5);
+
+                    if (nearby.length > 0) {
+                        showNearbyList(nearby);
+                    } else {
+                        alert('10km 이내 특별관이 없습니다.');
+                    }
+                },
+                function(error) {
+                    alert('위치 정보를 가져올 수 없습니다.\n위치 권한을 허용해주세요.');
+                }
+            );
+        };
+
+        // 근처 극장 리스트 표시
+        function showNearbyList(cinemas) {
+            let html = '<div style="background:white; padding:20px; margin-top:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+            html += '<h3 style="margin:0 0 15px; font-size:16px;">📍 내 주변 특별관 (10km 이내)</h3>';
+
+            cinemas.forEach((cinema, index) => {
+                const specialties = normalizeSpecialties(cinema.specialtyTheaters);
+                html += `
+                    <div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
+                         onclick="map.setCenter(new kakao.maps.LatLng(${cinema.latitude}, ${cinema.longitude})); map.setLevel(4);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong style="font-size:14px;">${index + 1}. ${cinema.cinemaName}</strong>
+                            <span style="color:#e91e63; font-weight:bold;">${cinema.distance.toFixed(1)}km</span>
+                        </div>
+                        <div style="margin-top:5px;">
+                            <span style="color:#666; font-size:12px;">${cinema.brand}</span>
+                            <span style="margin-left:10px; color:#999; font-size:12px;">
+                                ${specialties.join(', ')}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('nearby-result').innerHTML = html;
+        }
+
+        // 마커 표시
+        specialCinemas.forEach(cinema => {
+            if (cinema.latitude && cinema.longitude) {
+                const position = new kakao.maps.LatLng(cinema.latitude, cinema.longitude);
+                bounds.extend(position);
+
+                const specialties = normalizeSpecialties(cinema.specialtyTheaters);
+                const color = getMarkerColor(specialties);
+                const markerImage = createMarkerImage(color);
+
+                const marker = new kakao.maps.Marker({
+                    position: position,
+                    image: markerImage,
+                    map: map,
+                    title: cinema.cinemaName
+                });
+
+                const infowindow = new kakao.maps.InfoWindow({
+                    content: `
+                        <div style="padding:15px; min-width:200px; position:relative;">
+                            <button onclick="closeInfowindow()"
+                                    style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:18px; cursor:pointer; color:#999;">
+                                ✕
+                            </button>
+                            <h3 style="margin:0 0 8px; font-size:15px; font-weight:bold; padding-right:20px;">
+                                ${cinema.cinemaName}
+                            </h3>
+                            <span style="background:#e91e63; color:white; padding:2px 8px; border-radius:3px; font-size:11px;">
+                                ${cinema.brand}
+                            </span>
+                            <p style="margin:8px 0 0; color:#666; font-size:12px;">
+                                ${cinema.streetAddress}
+                            </p>
+                            <div style="margin-top:8px;">
+                                ${specialties.length ? specialties.map(t =>
+                                    `<span style="background:#f0f0f0; padding:2px 6px; margin-right:3px; border-radius:3px; font-size:11px;">🎬 ${t}</span>`
+                                ).join('') : '<span style="font-size:11px; color:#999;">특별관 정보 없음</span>'}
+                            </div>
+                        </div>
+                    `,
+                    removable: true
+                });
+
+                kakao.maps.event.addListener(marker, 'click', function() {
+                    if (currentInfowindow) {
+                        currentInfowindow.close();
+                    }
+                    infowindow.open(map, marker);
+                    currentInfowindow = infowindow;
+                });
+            }
+        });
+
+        window.closeInfowindow = function() {
+            if (currentInfowindow) {
+                currentInfowindow.close();
+                currentInfowindow = null;
+            }
+        };
+
+        map.setBounds(bounds);
+
+        /*]]>*/
+    </script>
 </section>

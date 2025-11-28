@@ -38,4 +38,10 @@ public class CinemaCSV {
 
     @CsvBindByName(column = "y(epsg5174)")
     private Double yEpsg5174;
+
+    @CsvBindByName(column = "lat_wgs84")
+    private Double latWgs84;
+
+    @CsvBindByName(column = "lon_wgs84")
+    private Double lonWgs84;
 }

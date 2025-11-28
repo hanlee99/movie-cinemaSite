@@ -17,18 +17,18 @@
 <header th:replace="~{fragments/components/header :: site-header}"></header>
 
 <main id="main" class="flex-grow">
-
     <div class="max-w-6xl mx-auto px-4">
         <!--replace와 insert 차이 주의 replace는 fragment를 사용한 태그를 날려버림 둘다 사용하고 싶다면 insert-->
         <section id="boxoffice" class="page-section"
                  th:insert="~{fragments/sections/boxoffice :: boxoffice}"></section>
 
-        <section id="cinema" class="page-section"
+
+        <section class="page-section"
                  th:insert="~{fragments/sections/cinema :: cinema}"></section>
 
-        <section id="map" class="page-section"
-                 th:insert="~{fragments/sections/map :: map}"></section>
-    </div>
+        <!-- <section id="map" class="page-section"
+                th:insert="~{fragments/sections/map :: map}"></section>  -->
+   </div>
 
 </main>
 

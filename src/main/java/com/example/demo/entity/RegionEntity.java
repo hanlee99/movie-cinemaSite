@@ -22,4 +22,6 @@ public class RegionEntity {
 
     @Column(length = 255)
     private String basicLocal;
+
+
 }

@@ -1,6 +1,8 @@
 package com.example.demo.controller.admin;
 
+import com.example.demo.repository.MovieRepository;
 import com.example.demo.service.MovieSyncService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +16,9 @@ import java.util.Map;
 public class AdminSyncController {
     private final MovieSyncService movieSyncService;
     private final CacheManager cacheManager;
+    private final MovieRepository movieRepository;
 
-    /**
-     * KOBIS 박스오피스 데이터 동기화
-     */
+     // KOBIS 박스오피스 데이터 동기화
     @DeleteMapping("/cache/boxoffice")
     public ResponseEntity<?> deleteBoxOfficeCache() {
         try {
@@ -32,26 +33,29 @@ public class AdminSyncController {
         }
     }
 
-    /**
-     * KMDB 영화 상세정보 동기화
-     */
+     // KMDB 영화 상세정보 동기화
+
     @PostMapping("/sync/year")
-    public ResponseEntity<?> syncKmdb(
-            @RequestParam int year
-    ) {
+    public ResponseEntity<?> syncKmdb(@RequestParam int year) {
         try {
-            // MovieSyncService의 KMDB 동기화 메서드 호출
+            long startTime = System.currentTimeMillis();
+            long beforeCount = movieRepository.count();
+
             movieSyncService.syncMoviesByYear(year);
+
+            long afterCount = movieRepository.count();
+            long duration = (System.currentTimeMillis() - startTime) / 1000;
+
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "KMDB 영화 정보 동기화 완료"
+                    "message", "KMDB 영화 정보 동기화 완료",
+                    "addedCount", afterCount - beforeCount,
+                    "totalCount", afterCount,
+                    "durationSeconds", duration
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "status", "error",
-                            "message", e.getMessage()
-                    ));
+                    .body(Map.of("status", "error", "message", e.getMessage()));
         }
     }
 
@@ -76,9 +80,8 @@ public class AdminSyncController {
         }
     }
 
-    /**
-     * 테스트용 엔드포인트
-     */
+
+     //테스트용 엔드포인드
     @GetMapping("/test")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok(Map.of(

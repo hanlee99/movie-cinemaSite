@@ -128,15 +128,28 @@ public class CinemaCsvInitializer {
             CinemaEntity cinema = new CinemaEntity();
             cinema.setCinemaName(csv.getCinemaName().trim());
             cinema.setBusinessStatus(csv.getBusinessStatus());
-            cinema.setClassificationRegion(csv.getClassificationRegion());
+
+            cinema.setClassificationRegion(extractRegion(csv.getLoadAddress()));
+
             cinema.setLoadAddress(csv.getLoadAddress());
             cinema.setStreetAddress(csv.getStreetAddress());
 
+            // EPSG:5174 좌표
             if (csv.getXEpsg5174() != null) {
                 cinema.setXEpsg5174(BigDecimal.valueOf(csv.getXEpsg5174()));
             }
             if (csv.getYEpsg5174() != null) {
                 cinema.setYEpsg5174(BigDecimal.valueOf(csv.getYEpsg5174()));
+            }
+
+            // WGS84 좌표
+            if (csv.getLatWgs84() != null && csv.getLonWgs84() != null) {
+                cinema.setLatWgs84(BigDecimal.valueOf(csv.getLatWgs84()));
+                cinema.setLonWgs84(BigDecimal.valueOf(csv.getLonWgs84()));
+                log.debug("WGS84 좌표 로드: {} ({}, {})",
+                        csv.getCinemaName(), csv.getLatWgs84(), csv.getLonWgs84());
+            } else {
+                log.warn("WGS84 좌표 없음: {}", csv.getCinemaName());
             }
 
             // Brand 설정
@@ -155,7 +168,7 @@ public class CinemaCsvInitializer {
             savedCount++;
         }
 
-        log.info("영화관 {}개 저장 완료", savedCount);
+        log.info("영화관 {}개 저장 완료 (WGS84 좌표 포함)", savedCount);
     }
 
     private void initSpecialtyMappings() throws Exception {
@@ -226,6 +239,28 @@ public class CinemaCsvInitializer {
         cinemaRepository.saveAll(cinemaMap.values());
 
         log.info("특별관 매핑 완료! 성공: {}, 실패: {}", matchedCount, unmatchedCount);
+    }
+
+    private String extractRegion(String address) {
+        if (address == null) return "기타";
+
+        if (address.contains("서울")) return "서울";
+        if (address.contains("경기")) return "경기";
+        if (address.contains("인천")) return "인천";
+        if (address.contains("대전")) return "대전";
+        if (address.contains("충청")) return "충청";
+        if (address.contains("세종")) return "세종";
+        if (address.contains("대구광역시")) return "대구";
+        if (address.contains("경상북도")) return "경북";
+        if (address.contains("부산")) return "부산";
+        if (address.contains("울산")) return "울산";
+        if (address.contains("경상남도")) return "경남";
+        if (address.contains("전라") || address.contains("전북")) return "전라";
+        if (address.contains("광주")) return "광주";
+        if (address.contains("강원")) return "강원";
+        if (address.contains("제주")) return "제주";
+
+        return "기타";
     }
 }
 

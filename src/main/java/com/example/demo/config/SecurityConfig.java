@@ -32,9 +32,20 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/login").permitAll()  // 추가
                         .anyRequest().permitAll()
                 )
-                .httpBasic(httpBasic -> httpBasic.realmName("Admin"));
+                .formLogin(form -> form                          // 변경
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/admin/dashboard")
+                        .permitAll()
+                )
+                .logout(logout -> logout                         // 추가
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .permitAll()
+                );
         return http.build();
     }
 

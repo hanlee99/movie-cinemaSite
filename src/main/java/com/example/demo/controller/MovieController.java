@@ -2,14 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.movie.DailyBoxOfficeResponse;
 import com.example.demo.dto.movie.MovieResponseDto;
-import com.example.demo.entity.MovieEntity;
 import com.example.demo.service.MovieService;
 import com.example.demo.service.MovieSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
