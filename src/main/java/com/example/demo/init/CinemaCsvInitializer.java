@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@Profile("local")
+//@Profile("local")
 @RequiredArgsConstructor
 public class CinemaCsvInitializer {
 
