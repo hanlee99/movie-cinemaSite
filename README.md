@@ -24,9 +24,9 @@
 
 > 🔗 **참고 API**
 > - [KOBIS Open API](https://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) - 박스오피스 순위
-> - [KMDB 영화정보시스템](https://www.kmdb.or.kr/main) - 영화 상세 정보
+> - [KMDB OPEN API](https://www.kmdb.or.kr/main) - 영화 상세 정보
 > - [공공데이터포털](https://www.data.go.kr/data/15107749/standard.do) - 영화상영관 표준데이터
-
+> - [카카오맵 API] - 영화관 위치 및 지도
 ---
 
 ## 🛠 기술 스택
@@ -37,7 +37,7 @@
 | **Frontend** | Thymeleaf, TailwindCSS, DaisyUI, JavaScript (ES6+) |
 | **Database** | PostgreSQL (Production), H2 (Development) |
 | **Build Tool** | Gradle |
-| **External APIs** | KOBIS API, KMDB API |
+| **External APIs** | KOBIS API, KMDB API, KAKAO API |
 | **Security** | Spring Security, Bucket4j (Rate Limiting) |
 | **Caching** | Caffeine Cache |
 
@@ -69,18 +69,21 @@ cd movie-cinemaSite
 ```bash
 setx KOBIS_API_KEY "발급받은_KOBIS_API키"
 setx KMDB_API_KEY "발급받은_KMDB_API키"
+setx KAKAO_API_KEY="발급받은_KAKAO_API키"
 ```
 
 **macOS / Linux**
 ```bash
 export KOBIS_API_KEY="발급받은_KOBIS_API키"
 export KMDB_API_KEY="발급받은_KMDB_API키"
+export KAKAO_API_KEY="발급받은_KAKAO_API키"
 ```
 
 또는 `application.properties`에서 직접 설정:
 ```properties
 api.kobis.key=발급받은_KOBIS_API키
 api.kmdb.key=발급받은_KMDB_API키
+api.kakao.key=발급받은_KAKAO_API키(자바스크립트 용)
 ```
 
 #### 3. 애플리케이션 실행
@@ -122,7 +125,7 @@ http://localhost:8080
 - 개봉일 기준 자동 분류
 
 ### 5. 전국 극장 정보
-- 공공데이터포털의 500+ 극장 정보 제공
+- 공공데이터포털의 433개개 극장 정보 제공
 - 브랜드별, 지역별 필터링 지원
 
 ---
@@ -191,19 +194,9 @@ External APIs              PostgreSQL Database
 
 ---
 
-## 🔐 보안 구현
-
-- **Spring Security**: 관리자 페이지 Basic Authentication
-- **Rate Limiting**: Bucket4j로 API 분당 20회 제한 (API 남용 방지)
-- **환경변수 관리**: API 키는 `.env`와 환경변수로 보호
-- **SQL Injection 방지**: JPA PreparedStatement 사용
-- **CORS 설정**: 필요한 도메인만 허용
-
----
-
 ## 🚀 배포 환경
 
-- **Platform**: [Render](https://render.com/) (무료 Tier)
+- **Platform**: [Render](https://render.com) (무료 Tier)
 - **Database**: PostgreSQL (무료 Tier)
 - **Runtime**: Docker
 - **CI/CD**: GitHub 자동 연동 (main 브랜치 푸시 시 자동 배포)
@@ -214,57 +207,6 @@ External APIs              PostgreSQL Database
 - **KOBIS API**: 요청 시마다 실시간 조회 (Caffeine 캐싱으로 1일 TTL)
 - **KMDB API**: 초기 배포 시 일괄 동기화, 관리자 API를 통한 수동 갱신 가능
 - **극장 정보**: 공공데이터포털 기반 정적 데이터
-
----
-
-## 🎯 기술적 의사결정
-
-### PostgreSQL 선택 이유
-- 배포 환경(Render) 무료 PostgreSQL 지원
-- H2보다 안정적인 운영 환경
-- 실무 스택 경험 축적
-
-### Service 계층 분리 (CQRS)
-- **MovieService**: 조회 전용 (`@Transactional(readOnly=true)`)
-- **MovieSyncService**: 수정/동기화 전용
-- 성능 최적화 및 책임 분리
-
-### Adapter Pattern 적용
-- 외부 API 변경에 대한 영향 최소화
-- Service 계층의 외부 의존성 제거
-- 테스트 용이성 향상
-
----
-
-## 🔧 트러블슈팅
-
-### 1. 한글 인코딩 문제 (UTF-8 디코딩)
-**문제**: KMDB API 응답에서 한글이 깨져서 나옴  
-**원인**: JVM 파일 디코딩과 저장 인코딩 불일치  
-**해결**: application.properties에서 UTF-8 강제 설정 + HttpURLConnection 헤더 설정  
-**결과**: API 응답 정상화 ✅
-
-### 2. 외부 API 데이터 정규화 및 매핑
-**문제**: KMDB API 응답 필드명이 다르고, 앞뒤 공백이 있어서 KOBIS와 매칭 실패  
-**원인**: @JsonProperty 미설정 + 데이터 정규화 부재  
-**해결**: @JsonProperty로 필드명 매핑 + trim()으로 공백 제거 후 저장  
-**결과**: API 와 db의 데이터 매칭 성공 ✅
-
-### 3. N+1 쿼리 최적화
-**문제**: 영화 상세 페이지에서 출연진 조회 시 N+1 쿼리 발생  
-**해결**: 상황별로 다른 메서드 구현 (기본 조회 vs LEFT JOIN FETCH)  
-**결과**: 쿼리 50% 감소, 응답 시간 30% 개선 ✅
-
-### 4. 페이징과 필터링 순서
-**문제**: 페이징을 먼저 한 후 필터링하니 결과 개수 부족  
-**원인**: 필터링 → 페이징 순서 미준수  
-**해결**: Repository 메서드에서 필터링 조건을 쿼리에 포함시킨 후 페이징 적용  
-**결과**: 정확한 페이징 결과 ✅
-
-### 5. 외부 API 장애 대응
-**문제**: KOBIS API 일시적 장애 시 서비스 중단  
-**해결**: 예외 처리 + Caffeine 캐시로 최근 데이터 제공 (Fallback 전략)  
-**결과**: 서비스 가용성 향상 ✅
 
 ---
 
@@ -303,22 +245,13 @@ open build/reports/jacoco/test/html/index.html
 
 ---
 
-## 👨‍💻 개발자
-
-**이한 (Lee Han)**
-- 📧 Email: cahannon538@naver.com
-- 💻 GitHub: [@hanlee99](https://github.com/hanlee99)
-- 📱 Phone: 010-3845-9075
-
----
-
 ## 📄 라이선스
 
 이 프로젝트는 개인 포트폴리오 목적으로 제작되었습니다.
 
 ---
 
-## 🙏 감사의 말
+## 🙏 출처
 
-- KOBIS Open API와 KMDB API를 제공해주신 영화진흥위원회와 한국영화데이터베이스에 감사드립니다.
-- 공공데이터포털의 영화상영관 표준데이터를 활용했습니다.
+- KOBIS 박스오피스 | KMDB 영화데이터 | 카카오맵 지도
+- 공공데이터포털의 영화상영관 
