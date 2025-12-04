@@ -119,11 +119,12 @@ public class MovieService {
 
         // 1차: 정확 매칭
         List<MovieEntity> exactMatches = movieRepository.findByTitleIn(titles);
+
         Map<String, MovieEntity> movieMap = exactMatches.stream()
                 .collect(Collectors.toMap(
                         MovieEntity::getTitle,
                         m -> m,
-                        (m1, m2) -> selectClosestByYear(m1, m2, titleToOpenDt.get(m1.getTitle()))  // LocalDate.parse() 제거
+                        (m1, m2) -> selectClosestByYear(m1, m2, titleToOpenDt.get(m1.getTitle()))
                 ));
 
         log.debug("정확 매칭: {}건 / {}건", movieMap.size(), titles.size());
@@ -132,8 +133,11 @@ public class MovieService {
         for (BoxOfficeItemDto item : boxOfficeItems) {
             if (movieMap.containsKey(item.getTitle())) continue;
 
+            //코비스데이터와 kmdb 매칭 주의
             String normalized = item.getTitle().replaceAll("\\s+", "");
-            List<MovieEntity> found = movieRepository.findByTitleContains(normalized);
+            //List<MovieEntity> found = movieRepository.findByTitleContains(normalized);
+            //movieEtc에서 포함
+            List<MovieEntity> found = movieRepository.findByTitleEtcContaining(normalized);
 
             if (!found.isEmpty()) {
                 MovieEntity best = found.stream()

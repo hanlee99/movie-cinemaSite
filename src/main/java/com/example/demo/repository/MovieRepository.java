@@ -29,6 +29,9 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
     // 제목 리스트로 조회
     List<MovieEntity> findByTitleIn(List<String> titles);
 
+    List<MovieEntity> findByTitleEtcContaining(String keyword);
+
+
     @Query("SELECT m FROM MovieEntity m WHERE m.title LIKE %:title%")
     List<MovieEntity> findByTitleContains(@Param("title") String title);
 
