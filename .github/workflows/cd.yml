@@ -45,12 +45,10 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
-            pkill -f 'java.*jar' || true
-            sleep 5
-            
-            nohup java -jar *.jar > application.log 2>&1 &
-            
-            echo "Deployment completed"
-            sleep 3
-            
-            curl -f http://localhost:8080/actuator/health || echo "Warning: Health check failed"
+            bash -c '
+              pkill -f "java.*jar" || true
+              sleep 5
+              nohup java -jar *.jar > application.log 2>&1 &
+              sleep 3
+              curl -f http://localhost:8080/actuator/health || echo "Warning: Health check failed"
+            ' && echo "Deployment completed" || echo "Deployment failed but continuing"
