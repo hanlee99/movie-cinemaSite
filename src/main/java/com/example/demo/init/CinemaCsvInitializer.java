@@ -14,6 +14,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -34,16 +36,16 @@ import java.util.stream.Collectors;
 @Component
 //@Profile("local")
 @RequiredArgsConstructor
-public class CinemaCsvInitializer {
+public class CinemaCsvInitializer implements ApplicationRunner {
 
     private final CinemaRepository cinemaRepository;
     private final BrandRepository brandRepository;
     private final RegionRepository regionRepository;
     private final SpecialtyTheaterRepository specialtyTheaterRepository;
 
-    @PostConstruct
+    @Override
     @Transactional
-    public void init() {
+    public void run(ApplicationArguments args) throws Exception {
         if (cinemaRepository.count() > 0) {
             log.info("데이터가 이미 존재합니다.");
             return;

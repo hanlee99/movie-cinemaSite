@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "specialty_theater")
 public class SpecialtyTheaterEntity {
 
     @Id
