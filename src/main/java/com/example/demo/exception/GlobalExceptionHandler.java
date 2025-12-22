@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(ExternalApiException.class)  // 👈 부모로 통합!
+    @ExceptionHandler(ExternalApiException.class)
     public ResponseEntity<ErrorResponse> handleExternalApi(ExternalApiException e, HttpServletRequest request) {
         log.error("외부 API 호출 실패: {}, URI: {}", e.getMessage(), request.getRequestURI());
 

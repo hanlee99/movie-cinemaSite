@@ -45,7 +45,7 @@ public class KmdbAdapter {
 
         return response.getData().stream()
                 .flatMap(data -> data.getResult().stream())
-                .map(kmdbMovieMapper::toDto)  // ✅ toInternalDto → toDto
+                .map(kmdbMovieMapper::toDto)
                 .toList();
     }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.external.adapter;
 
 import com.example.demo.dto.movie.boxoffice.DailyBoxOfficeResultDto;
+import com.example.demo.exception.KobisApiException;
 import com.example.demo.external.kobis.KobisApiClient;
 import com.example.demo.external.kobis.KobisDailyResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class KobisAdapter {
             }
             return DailyBoxOfficeResultDto.from(response);  // ✅ 직접 호출
         } catch (Exception e) {
-            throw new RuntimeException("박스오피스 조회 실패: " + e.getMessage(), e);
+            throw new KobisApiException("박스오피스 조회 실패: " + e.getMessage());
         }
     }
 }

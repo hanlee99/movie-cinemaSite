@@ -143,7 +143,7 @@ public class MovieService {
                 MovieEntity best = found.stream()
                         .min(Comparator.comparingInt(m ->
                                 yearDiff(m.getRepRlsDate(), item.getOpenDt())))
-                        .get();
+                        .orElseThrow(() -> new MovieNotFoundException(item.getTitle()));
                 movieMap.put(item.getTitle(), best);
                 log.debug("LIKE 매칭: {}", item.getTitle());
             } else {
@@ -158,7 +158,7 @@ public class MovieService {
     private MovieEntity selectClosestByYear(MovieEntity m1, MovieEntity m2, LocalDate openDt) {
         int diff1 = yearDiff(m1.getRepRlsDate(), openDt);
         int diff2 = yearDiff(m2.getRepRlsDate(), openDt);
-        log.warn("중복: {} | KOBIS: {} | DB1: {} | DB2: {}",
+        log.debug("중복: {} | KOBIS: {} | DB1: {} | DB2: {}",
                 m1.getTitle(), openDt, m1.getRepRlsDate(), m2.getRepRlsDate());
         return diff1 <= diff2 ? m1 : m2;
     }
