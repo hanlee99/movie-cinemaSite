@@ -32,7 +32,7 @@ public class MovieRecordEntity {
     @JoinColumn(name = "movie_id", nullable = false)
     private MovieEntity movie;
 
-    @Column(nullable = false)
+    @Column(name = "watched_date", nullable = false)
     private LocalDate watchedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
