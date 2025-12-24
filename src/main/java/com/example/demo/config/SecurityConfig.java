@@ -26,22 +26,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                        .ignoringRequestMatchers("/api/**")
+                )
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/login").permitAll()  // 추가
+                        .requestMatchers("/login").permitAll()
                         .anyRequest().permitAll()
                 )
-                .formLogin(form -> form                          // 변경
+                .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/admin/dashboard")
                         .permitAll()
                 )
-                .logout(logout -> logout                         // 추가
+                .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
                         .permitAll()

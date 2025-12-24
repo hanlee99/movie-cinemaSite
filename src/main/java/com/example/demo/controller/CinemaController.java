@@ -33,6 +33,4 @@ public class CinemaController {
     ) {
         return ResponseEntity.ok(cinemaService.getNearby(x, y, radius));
     }
-
-
 }

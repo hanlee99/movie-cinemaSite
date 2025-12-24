@@ -5,40 +5,35 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-
 @Entity
-@Table(name = "users")
+@Table(name = "watch_history")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class UserEntity {
+public class WatchHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 100)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    @Column(nullable = false, length = 60)
-    private String password;
+    @Column(nullable = false)
+    private Long movieId;
 
-    @Column(nullable = false, length = 50)
-    private String nickname;
+    @Column(nullable = false)
+    private LocalDate watchedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    @Builder.Default
-    private UserRole role = UserRole.USER;
+    @Column(length = 200)
+    private String comment;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    public boolean isAdmin() {
-        return this.role == UserRole.ADMIN;
-    }
 }
