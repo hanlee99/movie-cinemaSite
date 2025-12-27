@@ -1,0 +1,53 @@
+/* Header Component Styles */
+header {
+  background: #ffffff;
+  border-bottom: 3px solid #3b82f6;
+}
+
+/* 네비게이션 */
+.navbar {
+  position: relative;
+}
+
+/* 모바일 메뉴 애니메이션 */
+#mobile-menu {
+  transition: all 0.3s ease-in-out;
+}
+
+#mobile-menu.hidden {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+#mobile-menu:not(.hidden) {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* 검색 폼 포커스 효과 */
+input[type="text"]:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 버튼 호버 효과 개선 */
+button[type="submit"],
+a.px-4 {
+  transition: all 0.2s ease-in-out;
+}
+
+button[type="submit"]:hover,
+a.px-4:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button[type="submit"]:active,
+a.px-4:active {
+  transform: translateY(0);
+}
+
+/* 로그아웃 버튼 특별 스타일 */
+form button[type="submit"] {
+  cursor: pointer;
+}

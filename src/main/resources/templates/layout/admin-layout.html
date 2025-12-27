@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title layout:title-pattern="$CONTENT_TITLE - 관리자 - $LAYOUT_TITLE">관리자 - 오늘의영화</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- 공통 CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/base/main.css}">
+
+    <!-- 관리자 전용 CSS -->
+    <style>
+        .admin-sidebar {
+            width: 250px;
+            min-height: calc(100vh - 60px);
+            background: #1f2937;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 60px;
+            transition: transform 0.3s;
+        }
+
+        .admin-content {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: calc(100vh - 60px);
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+
+        .admin-nav-link {
+            display: block;
+            padding: 1rem;
+            color: #d1d5db;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .admin-nav-link:hover {
+            background-color: #374151;
+            color: white;
+        }
+
+        .admin-nav-link.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+
+    <!-- 페이지별 추가 CSS -->
+    <th:block layout:fragment="extra-css"></th:block>
+</head>
+<body class="bg-gray-100">
+    <!-- 관리자 헤더 -->
+    <header class="bg-gray-800 text-white px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        <div class="flex items-center gap-4">
+            <button id="sidebar-toggle" class="md:hidden text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold">관리자 대시보드</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <a th:href="@{/}" class="text-gray-300 hover:text-white">사이트로</a>
+            <form th:action="@{/admin/logout}" method="post" class="inline">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">로그아웃</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- 사이드바 -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <nav class="p-4">
+                <a th:href="@{/admin/dashboard}"
+                   class="admin-nav-link">
+                    📊 대시보드
+                </a>
+                <a th:href="@{/admin/sync}"
+                   class="admin-nav-link">
+                    🔄 데이터 동기화
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="admin-content flex-1" layout:fragment="content">
+            <!-- 페이지 콘텐츠가 여기 들어감 -->
+        </main>
+    </div>
+
+    <!-- 사이드바 토글 스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('admin-sidebar');
+
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+
+    <!-- 페이지별 추가 JavaScript -->
+    <th:block layout:fragment="extra-scripts"></th:block>
+</body>
+</html>

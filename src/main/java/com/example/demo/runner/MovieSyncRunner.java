@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 @Profile("local")  // local 프로파일에서만 실행
@@ -25,7 +25,7 @@ public class MovieSyncRunner implements CommandLineRunner {
         }
 
         log.info("🎬 KMDB 영화 동기화 시작...");
-        movieSyncService.syncMoviesByYear(2002);
+        movieSyncService.syncMoviesByYear(2025);
         log.info("✅ 동기화 완료!");
         //movieSyncService.syncMovieByTitle("가타카");
 

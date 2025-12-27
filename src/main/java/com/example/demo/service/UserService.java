@@ -1,7 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.user.LoginRequest;
-import com.example.demo.dto.user.LoginResponse;
 import com.example.demo.dto.user.RegisterRequest;
 import com.example.demo.dto.user.RegisterResponse;
 import com.example.demo.entity.UserEntity;
@@ -18,6 +16,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * 회원가입
+     * 로그인은 Spring Security가 처리합니다 (CustomUserDetailsService 참조)
+     */
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
         // 1. 이메일 중복 체크
@@ -43,25 +45,6 @@ public class UserService {
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getNickname()
-        );
-    }
-    @Transactional
-    public LoginResponse login(LoginRequest request) {
-        // 1. 이메일로 사용자 찾기
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
-
-        // 2. 비밀번호 확인
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-        // 3. 응답 반환
-        return new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNickname(),
-                user.getRole().name()
         );
     }
 }

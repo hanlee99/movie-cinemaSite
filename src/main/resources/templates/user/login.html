@@ -1,127 +1,54 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/auth-layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 350px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .error {
-            color: #dc3545;
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8d7da;
-            border-radius: 4px;
-        }
-        .success {
-            color: #28a745;
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #d4edda;
-            border-radius: 4px;
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-        .register-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body>
-<div class="login-container">
-    <h2>로그인</h2>
+    <div layout:fragment="content">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">로그인</h2>
 
-    <div th:if="${param.registered}" class="success">
-        회원가입이 완료되었습니다. 로그인해주세요.
-    </div>
-
-    <div th:if="${param.error}" class="error">
-        이메일 또는 비밀번호가 잘못되었습니다.
-    </div>
-
-    <form th:action="@{/user/login}" method="post">
-        <div class="form-group">
-            <label for="email">이메일</label>
-            <input type="email" id="email" name="email" required autofocus
-                   placeholder="example@email.com" />
+        <!-- Success Message -->
+        <div th:if="${param.registered}"
+             class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded text-center text-sm">
+            회원가입이 완료되었습니다. 로그인해주세요.
         </div>
 
-        <div class="form-group">
-            <label for="password">비밀번호</label>
-            <input type="password" id="password" name="password" required
-                   placeholder="비밀번호를 입력하세요" />
+        <!-- Error Message -->
+        <div th:if="${param.error}"
+             class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-center text-sm">
+            이메일 또는 비밀번호가 잘못되었습니다.
         </div>
 
-        <button type="submit">로그인</button>
-    </form>
+        <form th:action="@{/user/login}" method="post">
+            <div class="mb-5">
+                <label for="email" class="block mb-2 font-semibold text-gray-700">이메일</label>
+                <input type="email" id="email" name="email" required autofocus
+                       placeholder="example@email.com"
+                       class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
 
-    <div class="register-link">
-        계정이 없으신가요? <a th:href="@{/user/register}">회원가입</a>
+            <div class="mb-5">
+                <label for="password" class="block mb-2 font-semibold text-gray-700">비밀번호</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="비밀번호를 입력하세요"
+                       class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+
+            <button type="submit"
+                    class="w-full py-3 mt-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md">
+                로그인
+            </button>
+        </form>
+
+        <div class="text-center mt-6 text-gray-600 text-sm">
+            계정이 없으신가요?
+            <a th:href="@{/user/register}"
+               class="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
+                회원가입
+            </a>
+        </div>
     </div>
-</div>
 </body>
 </html>

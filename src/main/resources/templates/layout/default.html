@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO 메타 태그 -->
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">오늘의영화</title>
+    <meta name="description" content="영화 정보, 박스오피스, 영화관 찾기 서비스">
+    <meta name="keywords" content="영화, 박스오피스, 영화관, 영화 예매">
+    <meta name="author" content="오늘의영화">
+
+    <!-- Open Graph (SNS 공유용) - 페이지별로 덮어쓸 수 있음 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="오늘의영화">
+    <meta property="og:description" content="영화 정보, 박스오피스, 영화관 찾기 서비스">
+    <meta property="og:url" content="https://your-domain.com">
+    <meta property="og:image" th:content="@{/images/og-image.png}">
+
+    <!-- 페이지별 OG 태그 덮어쓰기 가능 -->
+    <th:block layout:fragment="extra-meta"></th:block>
+
+    <!-- 파비콘 -->
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-13180281396"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-PSBJDPBE30');
+    </script>
+
+    <!-- 공통 CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/base/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components/header.css}">
+    <link rel="stylesheet" th:href="@{/css/components/footer.css}">
+
+    <!-- 페이지별 추가 CSS -->
+    <th:block layout:fragment="extra-css"></th:block>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50">
+<!-- 알림 메시지 영역 (Toast) -->
+<div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2" style="display: none;">
+    <!-- Toast 메시지가 동적으로 추가됨 -->
+</div>
+
+<!-- 공통 헤더 -->
+<header th:replace="~{fragments/components/header :: site-header}"></header>
+
+<!-- 메인 콘텐츠 (각 페이지에서 정의) -->
+<main class="flex-grow" layout:fragment="content">
+    <!-- 기본 콘텐츠 (페이지에서 덮어씀) -->
+</main>
+
+<!-- 공통 푸터 -->
+<footer th:replace="~{fragments/components/footer :: site-footer}"></footer>
+
+<!-- 로딩 스피너 (전역) -->
+<div id="global-loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+    <div class="bg-white rounded-lg p-6 flex flex-col items-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p class="text-gray-700">로딩 중...</p>
+    </div>
+</div>
+
+<!-- 공통 JavaScript -->
+<script th:src="@{/js/base/app.js}" type="module" defer></script>
+
+<!-- Toast 알림 유틸리티 -->
+<script>
+    // Toast 알림 함수 (전역)
+    window.showToast = function(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        container.style.display = 'block';
+
+        const toast = document.createElement('div');
+        const bgColor = {
+            'success': 'bg-green-500',
+            'error': 'bg-red-500',
+            'warning': 'bg-yellow-500',
+            'info': 'bg-blue-500'
+        }[type] || 'bg-blue-500';
+
+        toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center justify-between min-w-[300px] max-w-md`;
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove(); if(!this.parentElement.parentElement.children.length) this.parentElement.parentElement.style.display='none';"
+                    class="ml-4 text-white hover:text-gray-200">✕</button>
+        `;
+
+        container.appendChild(toast);
+
+        // 3초 후 자동 제거
+        setTimeout(() => {
+            toast.remove();
+            if (!container.children.length) {
+                container.style.display = 'none';
+            }
+        }, 3000);
+    };
+</script>
+
+<!-- 페이지별 추가 JavaScript -->
+<th:block layout:fragment="extra-scripts"></th:block>
+</body>
+</html>

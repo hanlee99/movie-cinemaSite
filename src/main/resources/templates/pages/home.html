@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>홈</title>
+    
+    <!-- 페이지별 CSS -->
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/pages/boxoffice.css}">
+        <link rel="stylesheet" th:href="@{/css/pages/showtime.css}">
+        <link rel="stylesheet" th:href="@{/css/pages/cinema.css}">
+    </th:block>
+</head>
+<body>
+    <!-- 메인 콘텐츠 -->
+    <main layout:fragment="content">
+        <div class="max-w-6xl mx-auto px-4">
+            <!--replace와 insert 차이 주의 replace는 fragment를 사용한 태그를 날려버림 둘다 사용하고 싶다면 insert-->
+            <section id="boxoffice" class="page-section"
+                     th:insert="~{fragments/sections/boxoffice :: boxoffice}"></section>
+
+            <section class="page-section"
+                     th:insert="~{fragments/sections/cinema :: cinema}"></section>
+
+            <!-- <section id="map" class="page-section"
+                    th:insert="~{fragments/sections/map :: map}"></section>  -->
+        </div>
+    </main>
+</body>
+</html>

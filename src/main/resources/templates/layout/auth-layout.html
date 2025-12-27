@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">오늘의영화</title>
+    <meta name="description" content="로그인 및 회원가입">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- 공통 CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    
+    <!-- 인증 페이지 전용 스타일 -->
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+        
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-logo h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+    
+    <!-- 페이지별 추가 CSS -->
+    <th:block layout:fragment="extra-css"></th:block>
+</head>
+<body>
+    <!-- 인증 페이지 콘텐츠 (헤더/푸터 없음) -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <h1>오늘의영화</h1>
+            </div>
+            <!-- 페이지별 콘텐츠가 여기 들어감 -->
+            <th:block layout:fragment="content"></th:block>
+        </div>
+    </div>
+    
+    <!-- 페이지별 추가 JavaScript -->
+    <th:block layout:fragment="extra-scripts"></th:block>
+</body>
+</html>
+

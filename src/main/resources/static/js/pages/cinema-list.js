@@ -177,3 +177,4 @@ window.goToPage = function(page) {
     renderPagination();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+

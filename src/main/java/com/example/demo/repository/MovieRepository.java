@@ -18,8 +18,7 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 
     Optional<MovieEntity> findByMovieId(String movieId);
 
-    /*@Query("SELECT m FROM MovieEntity m LEFT JOIN FETCH m.people WHERE m.id = :id")*/
-
+    //n+1문제 해결을 위한 레프트조인
     @Query("SELECT DISTINCT m FROM MovieEntity m " +
             "LEFT JOIN FETCH m.people mp " +
             "LEFT JOIN FETCH mp.person " +
@@ -31,12 +30,6 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 
     List<MovieEntity> findByTitleEtcContaining(String keyword);
 
-
-    @Query("SELECT m FROM MovieEntity m WHERE m.title LIKE %:title%")
-    List<MovieEntity> findByTitleContains(@Param("title") String title);
-
-    // 또는 제목 + 개봉일
-    Optional<MovieEntity> findByTitleAndRepRlsDate(String title, String repRlsDate);
 
     List<MovieEntity> findAllByTitleContainingIgnoreCase(String title);
 

@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+package com.example.demo.controller.api;
 
 import com.example.demo.dto.cinema.CinemaResponseDto;
 import com.example.demo.service.CinemaService;
@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cinema")
 @RequiredArgsConstructor
-public class CinemaController {
+public class CinemaApiController {
     private final CinemaService cinemaService;
 
     @GetMapping("/all")
@@ -32,5 +32,10 @@ public class CinemaController {
             @RequestParam(defaultValue = "5000") BigDecimal radius
     ) {
         return ResponseEntity.ok(cinemaService.getNearby(x, y, radius));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CinemaResponseDto>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(cinemaService.searchByKeyword(keyword));
     }
 }

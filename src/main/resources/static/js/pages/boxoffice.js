@@ -218,7 +218,7 @@ export function initBoxoffice() {
       }
 
       currentPage++;
-      const endpoint = currentType === "now" ? "/movie/now-playing" : "/movie/upcoming";
+      const endpoint = currentType === "now" ? "/api/movie/now-playing" : "/api/movie/upcoming";
       const url = `${endpoint}?page=${currentPage}&size=${pageSize}`;
 
       try {
@@ -249,3 +249,4 @@ export function initBoxoffice() {
       }
   });
 }
+

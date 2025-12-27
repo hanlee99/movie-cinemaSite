@@ -9,10 +9,7 @@ import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class CreateWatchHistoryRequest {
-    @NotNull(message = "영화 ID는 필수입니다")
-    private Long movieId;
-
+public class UpdateWatchHistoryRequest {
     @NotNull(message = "관람 날짜는 필수입니다")
     @PastOrPresent(message = "관람 날짜는 현재 또는 과거여야 합니다")
     private LocalDate watchedAt;

@@ -1,13 +1,13 @@
-package com.example.demo.controller;
+package com.example.demo.controller.view;
 
 import com.example.demo.dto.cinema.CinemaResponseDto;
 import com.example.demo.dto.movie.MovieResponseDto;
 import com.example.demo.service.CinemaService;
 import com.example.demo.service.MovieService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,15 +19,17 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-public class HomeController {
+public class HomeViewController {
     private final MovieService movieService;
     private final CinemaService cinemaService;
     @Value("${api.kakao.key}")
     private String kakaoApiKey;
 
     @GetMapping("/")
-    public String home(Model model) {
-
+    public String home(Model model, HttpSession session) {
+        // 세션 로그 확인
+        Long userId = (Long) session.getAttribute("userId");
+        log.info("홈 페이지 접근 - userId: {}", userId);
 
         model.addAttribute("daily", movieService.getDailyBoxOfficeWithMovieInfo());
         model.addAttribute("nowPlaying", movieService.getNowPlaying(1, 20));
@@ -41,12 +43,12 @@ public class HomeController {
         model.addAttribute("KAKAO_API_KEY", kakaoApiKey);
 
 
-        return "home";
+        return "pages/home";
     }
 
     @GetMapping("/cinema/list")
     public String cinemaList() {
-        return "cinema-list";  // cinema-list.html 반환
+        return "pages/cinema-list";  // pages/cinema-list.html 반환
     }
 
     @GetMapping("/cinema/{id}")
@@ -62,7 +64,7 @@ public class HomeController {
         MovieResponseDto movie = movieService.getMovieDetail(id);
         model.addAttribute("movie", movie);
 
-        return "detail";
+        return "pages/detail";
     }
 
     @GetMapping("/search")
@@ -77,6 +79,6 @@ public class HomeController {
             model.addAttribute("keyword", keyword);
         }
 
-        return "search";
+        return "pages/search";
     }
 }

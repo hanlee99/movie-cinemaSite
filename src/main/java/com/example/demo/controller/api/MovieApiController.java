@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+package com.example.demo.controller.api;
 
 import com.example.demo.dto.movie.DailyBoxOfficeResponse;
 import com.example.demo.dto.movie.MovieResponseDto;
@@ -15,8 +15,8 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/movie")
-public class MovieController {
+@RequestMapping("/api/movie")
+public class MovieApiController {
     private final MovieService movieService;
     private final MovieSyncService movieSyncService;
 
@@ -38,7 +38,7 @@ public class MovieController {
 
     @GetMapping("/boxoffice/daily")
     public ResponseEntity<DailyBoxOfficeResponse> getDailyBoxOffice() {
-        log.info("GET /api/movies/box-office/daily 요청");
+        log.info("GET /api/movie/boxoffice/daily 요청");
         return ResponseEntity.ok(movieService.getDailyBoxOfficeWithMovieInfo());
     }
 

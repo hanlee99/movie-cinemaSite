@@ -45,4 +45,12 @@ public class CinemaService {
                 //.limit(30)
                 .collect(Collectors.toList());
     }
+
+    public List<CinemaResponseDto> searchByKeyword(String keyword) {
+        return cinemaRepository.searchByName(keyword)
+                .stream()
+                .map(CinemaEntity::toDto)
+                .limit(10)  // 최대 10개까지만 반환
+                .collect(Collectors.toList());
+    }
 }

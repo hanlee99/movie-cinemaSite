@@ -42,4 +42,10 @@ public interface CinemaRepository extends JpaRepository<CinemaEntity, Long> {
             "WHERE s.name IN ('아이맥스', '수퍼플렉스', 'DOLBY CINEMA')")
     @EntityGraph(attributePaths = {"brandEntity", "regionEntity", "specialtyTheaterEntities"})
     List<CinemaEntity> findSpecialTheaterCinemas();
+
+    @Query("SELECT c FROM CinemaEntity c " +
+            "WHERE c.cinemaName LIKE CONCAT('%', :keyword, '%') " +
+            "ORDER BY c.cinemaName")
+    @EntityGraph(attributePaths = {"brandEntity", "regionEntity", "specialtyTheaterEntities"})
+    List<CinemaEntity> searchByName(@Param("keyword") String keyword);
 }
