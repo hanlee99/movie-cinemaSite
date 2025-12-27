@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.oauth.OAuthUserService;
 import com.example.demo.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
+    private final OAuthUserService oAuthUserService;
 
     @Value("${admin.username}")
     private String adminUsername;
@@ -60,20 +62,30 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/user/**")
+                .securityMatcher("/user/**", "/login/oauth2/**", "/oauth2/**")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login", "/user/register").permitAll()
+                        .requestMatchers("/user/login", "/user/dev-login", "/user/dev-register").permitAll()
                         .requestMatchers("/user/mypage", "/user/watch-history").authenticated()
                         .anyRequest().permitAll()
                 )
-                .formLogin(form -> form
+                // OAuth2 로그인 추가
+                .oauth2Login(oauth2 -> oauth2
                         .loginPage("/user/login")
-                        .loginProcessingUrl("/user/login")
+                        .defaultSuccessUrl("/user/mypage", true)
+                        .failureUrl("/user/login?error=true")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuthUserService)
+                        )
+                )
+                // 기존 Form 로그인 유지 (테스트용 - /user/dev-login)
+                .formLogin(form -> form
+                        .loginPage("/user/dev-login")
+                        .loginProcessingUrl("/user/dev-login")
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/user/mypage", true)
-                        .failureUrl("/user/login?error=true")
+                        .failureUrl("/user/dev-login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout

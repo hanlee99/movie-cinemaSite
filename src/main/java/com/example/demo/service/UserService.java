@@ -30,11 +30,12 @@ public class UserService {
         // 2. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 3. 엔티티 생성
+        // 3. 엔티티 생성 (LOCAL 계정)
         UserEntity user = UserEntity.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .nickname(request.getNickname())
+                .oauthProvider("LOCAL")  // 로컬 계정 표시
                 .build();
 
         // 4. 저장

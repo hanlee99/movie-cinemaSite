@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/auth-layout}">
+<head>
+    <title>개발자 로그인</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">개발자 로그인</h2>
+        <p class="text-center text-sm text-gray-500 mb-6">테스트 계정 전용</p>
+
+        <!-- Error Message -->
+        <div th:if="${param.error}"
+             class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-center text-sm">
+            이메일 또는 비밀번호가 잘못되었습니다.
+        </div>
+
+        <form th:action="@{/user/dev-login}" method="post">
+            <div class="mb-5">
+                <label for="email" class="block mb-2 font-semibold text-gray-700">이메일</label>
+                <input type="email" id="email" name="email" required autofocus
+                       placeholder="example@email.com"
+                       class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+
+            <div class="mb-5">
+                <label for="password" class="block mb-2 font-semibold text-gray-700">비밀번호</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="비밀번호를 입력하세요"
+                       class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+
+            <button type="submit"
+                    class="w-full py-3 mt-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md">
+                로그인
+            </button>
+        </form>
+
+        <div class="text-center mt-6 text-gray-600 text-sm">
+            계정이 없으신가요?
+            <a th:href="@{/user/dev-register}"
+               class="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
+                회원가입
+            </a>
+        </div>
+
+        <div class="text-center mt-4 text-gray-500 text-xs">
+            <a th:href="@{/user/login}"
+               class="text-gray-600 hover:text-gray-800 underline">
+                ← 일반 로그인으로 돌아가기
+            </a>
+        </div>
+    </div>
+</body>
+</html>

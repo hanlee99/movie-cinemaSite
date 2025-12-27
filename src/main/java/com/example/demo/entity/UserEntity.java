@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -23,11 +24,17 @@ public class UserEntity {
     @Column(unique = true, nullable = false, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 60)
+    @Column(length = 60)  // OAuth 유저는 패스워드 없음
     private String password;
 
     @Column(nullable = false, length = 50)
     private String nickname;
+
+    @Column(length = 20)
+    private String oauthProvider;  // "NAVER", "GOOGLE", "LOCAL"
+
+    @Column(length = 100)
+    private String oauthId;  // OAuth provider의 unique ID
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -40,5 +47,9 @@ public class UserEntity {
 
     public boolean isAdmin() {
         return this.role == UserRole.ADMIN;
+    }
+
+    public boolean isOAuthUser() {
+        return oauthProvider != null && !oauthProvider.equals("LOCAL");
     }
 }

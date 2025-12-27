@@ -16,6 +16,7 @@
 - 📽️ **영화 상세 정보** - KMDB API 연동으로 포스터, 줄거리, 출연진 정보 제공
 - 🏢 **전국 극장 정보** - 공공데이터포털의 영화상영관 표준데이터 활용
 - 🔍 **영화 검색** - 제목 기반 실시간 검색
+- 🔐 **소셜 로그인** - 네이버/구글 OAuth2 인증 지원
 
 ### 아키텍처
 - **백엔드**: Spring Boot에서 외부 API 호출 및 데이터 가공
@@ -38,7 +39,7 @@
 | **Database** | PostgreSQL (Production), H2 (Development) |
 | **Build Tool** | Gradle |
 | **External APIs** | KOBIS API, KMDB API, KAKAO API |
-| **Security** | Spring Security, Bucket4j (Rate Limiting) |
+| **Security** | Spring Security, OAuth2 Client (Naver/Google), Bucket4j (Rate Limiting) |
 | **Caching** | Caffeine Cache |
 
 ---
@@ -70,6 +71,10 @@ cd movie-cinemaSite
 setx KOBIS_API_KEY "발급받은_KOBIS_API키"
 setx KMDB_API_KEY "발급받은_KMDB_API키"
 setx KAKAO_API_KEY="발급받은_KAKAO_API키"
+setx NAVER_CLIENT_ID "네이버_OAuth_클라이언트_ID"
+setx NAVER_CLIENT_SECRET "네이버_OAuth_클라이언트_시크릿"
+setx GOOGLE_CLIENT_ID "구글_OAuth_클라이언트_ID"
+setx GOOGLE_CLIENT_SECRET "구글_OAuth_클라이언트_시크릿"
 ```
 
 **macOS / Linux**
@@ -77,6 +82,10 @@ setx KAKAO_API_KEY="발급받은_KAKAO_API키"
 export KOBIS_API_KEY="발급받은_KOBIS_API키"
 export KMDB_API_KEY="발급받은_KMDB_API키"
 export KAKAO_API_KEY="발급받은_KAKAO_API키"
+export NAVER_CLIENT_ID="네이버_OAuth_클라이언트_ID"
+export NAVER_CLIENT_SECRET="네이버_OAuth_클라이언트_시크릿"
+export GOOGLE_CLIENT_ID="구글_OAuth_클라이언트_ID"
+export GOOGLE_CLIENT_SECRET="구글_OAuth_클라이언트_시크릿"
 ```
 
 또는 `application.properties`에서 직접 설정:
@@ -84,6 +93,12 @@ export KAKAO_API_KEY="발급받은_KAKAO_API키"
 api.kobis.key=발급받은_KOBIS_API키
 api.kmdb.key=발급받은_KMDB_API키
 api.kakao.key=발급받은_KAKAO_API키(자바스크립트 용)
+
+# OAuth2 설정 (선택사항 - 소셜 로그인 사용 시)
+spring.security.oauth2.client.registration.naver.client-id=네이버_클라이언트_ID
+spring.security.oauth2.client.registration.naver.client-secret=네이버_시크릿
+spring.security.oauth2.client.registration.google.client-id=구글_클라이언트_ID
+spring.security.oauth2.client.registration.google.client-secret=구글_시크릿
 ```
 
 #### 3. 애플리케이션 실행
@@ -100,6 +115,18 @@ java -jar build/libs/demo-0.0.1-SNAPSHOT.jar
 ```
 http://localhost:8080
 ```
+
+#### 5. 개발자용 테스트 계정 (선택사항)
+
+실제 서비스는 **네이버/구글 소셜 로그인**만 지원합니다.
+
+**테스트 목적으로 로컬 계정을 생성하려면:**
+
+1. **직접 회원가입**: http://localhost:8080/user/dev-register
+2. **직접 로그인**: http://localhost:8080/user/dev-login
+
+> ⚠️ `/user/dev-*` 경로는 개발/테스트 전용입니다.
+> 프로덕션 배포 시에는 소셜 로그인만 활성화됩니다.
 
 ---
 
