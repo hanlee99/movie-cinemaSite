@@ -83,7 +83,7 @@ public class WatchHistoryService {
                 .toList();
     }
 
-    // 관람기록 수정 (Step 4용)
+    // 관람기록 수정
     @Transactional
     public WatchHistoryResponse update(Long userId, Long historyId, UpdateWatchHistoryRequest request) {
         // 1. 관람기록 조회

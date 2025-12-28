@@ -5,15 +5,20 @@ import com.example.demo.dto.movie.MovieResponseDto;
 import com.example.demo.dto.movie.boxoffice.BoxOfficeItemDto;
 import com.example.demo.dto.movie.boxoffice.DailyBoxOfficeResultDto;
 import com.example.demo.entity.MovieEntity;
+import com.example.demo.entity.MovieStats;
 
 import com.example.demo.exception.MovieNotFoundException;
 import com.example.demo.repository.MovieRepository;
+import com.example.demo.repository.MovieStatsRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class MovieService {
     private final MovieRepository movieRepository;
+    private final MovieStatsRepository movieStatsRepository;
     private final BoxOfficeService boxOfficeService;
 
     public MovieEntity findById(Long id) {
@@ -42,9 +48,44 @@ public class MovieService {
                 .orElseThrow(() -> new MovieNotFoundException(id));
     }
 
+    /**
+     * 영화 상세 조회 (조회수 증가 포함)
+     *
+     * @param id 영화 ID
+     * @return 영화 상세 정보
+     */
+    @Transactional
+    @Retryable(
+        value = OptimisticLockingFailureException.class,
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 50)
+    )
     public MovieResponseDto getMovieDetail(Long id) {
+        // 1. 영화 정보 조회
         MovieEntity entity = findByIdWithPeople(id);
+
+        // 2. 조회수 증가 (동시성 제어)
+        incrementViewCount(id);
+
         return MovieResponseDto.from(entity);
+    }
+
+    /**
+     * 조회수 증가 (내부 데이터 수집용)
+     *
+     * 동시성 제어:
+     * - @Version으로 낙관적 락 적용
+     * - 여러 사용자가 동시에 조회해도 Lost Update 방지
+     * - OptimisticLockingFailureException 발생 시 @Retryable이 자동 재시도
+     */
+    private void incrementViewCount(Long movieId) {
+        MovieStats stats = movieStatsRepository.findById(movieId)
+                .orElseGet(() -> MovieStats.createDefault(movieId));
+
+        stats.incrementView();
+        movieStatsRepository.save(stats);
+
+        log.debug("영화 조회수 증가 - movieId: {}, viewCount: {}", movieId, stats.getViewCount());
     }
 
     public List<MovieResponseDto> findMoviesByTitle(String title) {

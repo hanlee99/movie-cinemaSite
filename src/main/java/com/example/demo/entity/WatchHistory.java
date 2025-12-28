@@ -57,7 +57,6 @@ public class WatchHistory {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // 수정 메서드 (Step 4용)
     public void update(LocalDate watchedAt, Long cinemaId, String cinemaName,
                       LocalTime showTime, Integer rating, String comment) {
         if (watchedAt != null) this.watchedAt = watchedAt;
