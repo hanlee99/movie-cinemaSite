@@ -100,4 +100,23 @@ public class UserViewController {
 
         return "user/watch-history";
     }
+
+    // 찜 목록 페이지 (Spring Security가 인증 확인)
+    @GetMapping("/wishlist")
+    public String wishlist(@AuthenticationPrincipal Object principal, Model model) {
+        if (principal == null) {
+            return "redirect:/user/login";
+        }
+
+        // OAuth 로그인과 Form 로그인 모두 지원
+        if (principal instanceof CustomOAuth2User oauth2User) {
+            model.addAttribute("userId", oauth2User.getUserId());
+        } else if (principal instanceof CustomUserDetails userDetails) {
+            model.addAttribute("userId", userDetails.getUserId());
+        } else {
+            return "redirect:/user/login";
+        }
+
+        return "user/wishlist";
+    }
 }

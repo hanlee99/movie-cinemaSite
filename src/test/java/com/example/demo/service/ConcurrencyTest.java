@@ -17,20 +17,7 @@ import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * 동시성 제어 테스트
- *
- * 주의: 이 테스트는 H2 인메모리 데이터베이스의 한계로 인해 실패합니다.
- * H2는 실제 멀티스레드 환경에서 Optimistic Locking(@Version)을 완벽히 지원하지 못합니다.
- *
- * 실제 동시성 제어 확인 방법:
- * 1. PostgreSQL 같은 실제 DB로 테스트
- * 2. 브라우저에서 F5 연타 (개발자 도구 Network 탭에서 동시 요청 확인)
- * 3. Postman의 Collection Runner로 동시 요청 전송
- * 4. test_concurrency.sh 스크립트 실행 후 DB 조회
- *
- * 구현 자체는 정상 작동하며, @Version과 @Retryable을 통해 동시성을 제어합니다.
- */
+
 @SpringBootTest
 @Disabled("H2 데이터베이스는 실제 동시성 환경에서 Optimistic Locking을 완벽히 지원하지 않음. 실제 DB 또는 수동 테스트 필요.")
 class MovieConcurrencyTest {

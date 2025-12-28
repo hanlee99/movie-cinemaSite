@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.MovieEntity;
 import com.example.demo.entity.MovieStats;
 import com.example.demo.entity.Wishlist;
 import com.example.demo.exception.MovieNotFoundException;
@@ -15,7 +16,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -93,5 +94,31 @@ public class WishlistService {
 
     public boolean isWishlisted(Long userId, Long movieId) {
         return wishlistRepository.existsByUserIdAndMovieId(userId, movieId);
+    }
+
+    public List<Map<String, Object>> getMyWishlist(Long userId) {
+        List<Wishlist> wishlistItems = wishlistRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Wishlist wishlist : wishlistItems) {
+            MovieEntity movie = movieRepository.findById(wishlist.getMovieId()).orElse(null);
+
+            if (movie == null) {
+                continue;
+            }
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("wishlistId", wishlist.getId());
+            item.put("movieId", movie.getId());
+            item.put("title", movie.getTitle());
+            item.put("poster", movie.getPoster() != null ? movie.getPoster() : "");
+            item.put("genre", movie.getGenre() != null ? movie.getGenre() : "");
+            item.put("repRlsDate", movie.getRepRlsDate() != null ? movie.getRepRlsDate() : "");
+            item.put("createdAt", wishlist.getCreatedAt().toString());
+
+            result.add(item);
+        }
+
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.demo.controller.api;
 
+import com.example.demo.security.CustomOAuth2User;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.WishlistService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,9 +25,9 @@ public class WishlistApiController {
     @PostMapping("/{movieId}")
     public ResponseEntity<Map<String, Object>> toggleWishlist(
             @PathVariable Long movieId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal Object principal
     ) {
-        Long userId = userDetails.getUserId();
+        Long userId = getUserId(principal);
         boolean isWishlisted = wishlistService.toggleWishlist(userId, movieId);
 
         return ResponseEntity.ok(Map.of(
@@ -39,14 +40,39 @@ public class WishlistApiController {
     @GetMapping("/{movieId}")
     public ResponseEntity<Map<String, Object>> checkWishlist(
             @PathVariable Long movieId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal Object principal
     ) {
-        Long userId = userDetails.getUserId();
+        Long userId = getUserId(principal);
         boolean isWishlisted = wishlistService.isWishlisted(userId, movieId);
 
         return ResponseEntity.ok(Map.of(
                 "movieId", movieId,
                 "isWishlisted", isWishlisted
         ));
+    }
+
+    @Operation(summary = "내 찜 목록 조회", description = "로그인한 사용자의 찜 목록 조회")
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getMyWishlist(
+            @AuthenticationPrincipal Object principal
+    ) {
+        Long userId = getUserId(principal);
+        var wishlist = wishlistService.getMyWishlist(userId);
+
+        return ResponseEntity.ok(Map.of(
+                "wishlist", wishlist
+        ));
+    }
+
+    /**
+     * OAuth와 Form 로그인 모두 지원하기 위한 헬퍼 메서드
+     */
+    private Long getUserId(Object principal) {
+        if (principal instanceof CustomOAuth2User oauth2User) {
+            return oauth2User.getUserId();
+        } else if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getUserId();
+        }
+        throw new IllegalStateException("인증되지 않은 사용자입니다.");
     }
 }

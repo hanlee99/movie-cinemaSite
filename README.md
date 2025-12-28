@@ -17,6 +17,9 @@
 - 🏢 **전국 극장 정보** - 공공데이터포털의 영화상영관 표준데이터 활용
 - 🔍 **영화 검색** - 제목 기반 실시간 검색
 - 🔐 **소셜 로그인** - 네이버/구글 OAuth2 인증 지원
+- 📝 **관람기록 관리** - 별점, 극장, 한줄평 등 개인 관람 기록 저장
+- ❤️ **찜 목록** - 보고 싶은 영화를 찜하여 마이페이지에서 관리
+- 🔒 **동시성 제어** - Optimistic Locking으로 조회수/찜 개수 정확성 보장
 
 ### 아키텍처
 - **백엔드**: Spring Boot에서 외부 API 호출 및 데이터 가공
@@ -41,6 +44,7 @@
 | **External APIs** | KOBIS API, KMDB API, KAKAO API |
 | **Security** | Spring Security, OAuth2 Client (Naver/Google), Bucket4j (Rate Limiting) |
 | **Caching** | Caffeine Cache |
+| **Concurrency** | JPA @Version (Optimistic Locking), Spring Retry |
 
 ---
 
@@ -152,8 +156,19 @@ http://localhost:8080
 - 개봉일 기준 자동 분류
 
 ### 5. 전국 극장 정보
-- 공공데이터포털의 433개개 극장 정보 제공
+- 공공데이터포털의 433개 극장 정보 제공
 - 브랜드별, 지역별 필터링 지원
+- 카카오맵 API 연동으로 지도에서 극장 위치 확인
+
+### 6. 사용자 맞춤 기능
+- **관람기록**: 관람일, 극장, 별점(1-5), 한줄평 기록 가능
+- **찜 목록**: 보고 싶은 영화를 저장하고 관리
+- **마이페이지**: 관람기록과 찜 목록을 통합 관리
+
+### 7. 동시성 제어
+- **Optimistic Locking**: JPA @Version을 활용한 낙관적 락
+- **자동 재시도**: Spring Retry로 충돌 시 최대 3회 재시도
+- **조회수/찜 개수**: 동시 접근 시에도 정확한 카운팅 보장
 
 ---
 
@@ -166,7 +181,7 @@ demo/
 │   │   │   ├── controller/         # REST API 엔드포인트
 │   │   │   ├── service/            # 비즈니스 로직 & 트랜잭션 관리
 │   │   │   ├── repository/         # JPA Repository
-│   │   │   ├── entity/             # JPA Entity (Movie, Cinema 등)
+│   │   │   ├── entity/             # JPA Entity (Movie, Cinema, Wishlist, WatchHistory, MovieStats 등)
 │   │   │   ├── dto/                # 계층간 데이터 전송 객체
 │   │   │   │   ├── movie/          # 영화 관련 DTO
 │   │   │   │   └── cinema/         # 극장 관련 DTO
@@ -175,8 +190,9 @@ demo/
 │   │   │   │   ├── kobis/          # KOBIS API Client
 │   │   │   │   └── kmdb/           # KMDB API Client
 │   │   │   ├── mapper/             # Entity ↔ DTO 변환
+│   │   │   ├── security/           # Spring Security, OAuth2 설정
 │   │   │   ├── exception/          # 예외 처리
-│   │   │   └── config/             # Spring 설정
+│   │   │   └── config/             # Spring 설정 (Cache, Retry 등)
 │   │   └── resources/
 │   │       ├── data/               # 초기 데이터 (CSV)
 │   │       ├── templates/          # Thymeleaf 템플릿
@@ -205,11 +221,14 @@ External APIs              PostgreSQL Database
 - **Adapter Pattern**: 외부 API(KOBIS, KMDB)를 Adapter로 격리하여 Service 의존성 분리
 - **DTO 변환 전략**: Entity와 DTO 명확히 분리로 계층간 결합도 최소화
 - **Service 책임 분리**: MovieService(조회) / MovieSyncService(동기화)로 SRP 준수
+- **Optimistic Locking**: @Version을 이용한 낙관적 락으로 동시성 제어
+- **재시도 패턴**: @Retryable로 충돌 시 자동 재시도 (최대 3회, 50ms 간격)
 
 ---
 
 ## 📡 API 명세
 
+### 영화 정보 API
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
 | GET | `/` | 메인 페이지 (Thymeleaf) | - |
@@ -218,6 +237,23 @@ External APIs              PostgreSQL Database
 | GET | `/movie/box-office/daily` | 일일 박스오피스 조회 | - |
 | GET | `/movie/now-playing` | 현재 상영작 목록 | page, size |
 | GET | `/movie/upcoming` | 개봉 예정작 목록 | page, size |
+
+### 사용자 기능 API
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/user/watch-history` | 관람기록 페이지 | Required |
+| GET | `/api/watch-history` | 내 관람기록 조회 | Required |
+| POST | `/api/watch-history` | 관람기록 추가 | Required |
+| DELETE | `/api/watch-history/{id}` | 관람기록 삭제 | Required |
+| GET | `/user/wishlist` | 찜 목록 페이지 | Required |
+| GET | `/api/wishlist` | 내 찜 목록 조회 | Required |
+| GET | `/api/wishlist/{movieId}` | 찜 상태 확인 | Required |
+| POST | `/api/wishlist/{movieId}` | 찜 토글 (추가/삭제) | Required |
+
+### 극장 정보 API
+| Method | Endpoint | Description | Parameters |
+|--------|----------|-------------|------------|
+| GET | `/api/cinema/search` | 극장 검색 | keyword |
 
 ---
 
@@ -259,7 +295,11 @@ open build/reports/jacoco/test/html/index.html
 - [ ] Swagger/SpringDoc을 통한 API 문서화
 - [ ] Redis 캐싱 레이어 구현
 - [ ] GitHub Actions를 통한 자동 데이터 동기화
-- [ ] 사용자 인증 및 찜하기 기능
+- [x] 사용자 인증 및 찜하기 기능 ✅
+- [x] 관람기록 관리 기능 ✅
+- [x] Optimistic Locking을 통한 동시성 제어 ✅
+- [ ] 사용자 통계 (월별 관람 횟수, 장르 선호도 등)
+- [ ] 영화 추천 알고리즘 (관람기록/찜 기반)
 
 ---
 

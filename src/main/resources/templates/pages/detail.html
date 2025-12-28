@@ -114,15 +114,28 @@
                     </p>
                 </div>
 
-                <!-- 관람기록 추가 버튼 (로그인한 경우만) -->
+                <!-- 찜 버튼 + 관람기록 추가 버튼 (로그인한 경우만) -->
                 <div class="px-6 pb-6 border-t border-gray-200" sec:authorize="isAuthenticated()">
-                    <button id="addWatchHistoryBtn"
-                            class="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        관람기록 추가
-                    </button>
+                    <div class="flex gap-3">
+                        <!-- 찜 버튼 -->
+                        <button id="toggleWishlistBtn"
+                                data-movie-id="${movie.id}"
+                                class="flex-shrink-0 py-3 px-6 bg-white border-2 border-red-500 text-red-500 font-semibold rounded-lg hover:bg-red-50 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
+                            <svg id="wishlistIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            <span id="wishlistText">찜</span>
+                        </button>
+
+                        <!-- 관람기록 추가 버튼 -->
+                        <button id="addWatchHistoryBtn"
+                                class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            관람기록 추가
+                        </button>
+                    </div>
                 </div>
             </div>
             

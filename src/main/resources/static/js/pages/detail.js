@@ -13,6 +13,9 @@ export function initMovieDetail(movieId, movieTitle) {
     currentMovieId = movieId;
     currentMovieTitle = movieTitle;
 
+    // 찜 버튼 초기화
+    initWishlistButton();
+
     // 모달 관련 요소
     const modal = document.getElementById('watchHistoryModal');
     const addBtn = document.getElementById('addWatchHistoryBtn');
@@ -436,4 +439,122 @@ function initTimePicker() {
             showTimeDisplay.value = time;
         }
     });
+}
+
+/**
+ * 찜 버튼 초기화
+ */
+async function initWishlistButton() {
+    const wishlistBtn = document.getElementById('toggleWishlistBtn');
+    if (!wishlistBtn) return;
+
+    const movieId = currentMovieId;
+
+    // 현재 찜 상태 확인
+    await checkWishlistStatus(movieId);
+
+    // 찜 버튼 클릭 이벤트
+    wishlistBtn.addEventListener('click', () => toggleWishlist(movieId));
+}
+
+/**
+ * 찜 상태 확인
+ */
+async function checkWishlistStatus(movieId) {
+    try {
+        const response = await fetch(`/api/wishlist/${movieId}`);
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                return; // 로그인하지 않은 경우 기본 상태 유지
+            }
+            throw new Error('찜 상태 확인 실패');
+        }
+
+        const data = await response.json();
+        updateWishlistUI(data.isWishlisted);
+    } catch (error) {
+        console.error('찜 상태 확인 중 오류:', error);
+    }
+}
+
+/**
+ * 찜 토글
+ */
+async function toggleWishlist(movieId) {
+    try {
+        const response = await fetch(`/api/wishlist/${movieId}`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/user/login';
+                return;
+            }
+            throw new Error('찜 처리 실패');
+        }
+
+        const data = await response.json();
+        updateWishlistUI(data.isWishlisted);
+
+        // 성공 메시지 (선택사항)
+        if (data.isWishlisted) {
+            showToast('찜 목록에 추가되었습니다 ❤️');
+        } else {
+            showToast('찜 목록에서 제거되었습니다');
+        }
+    } catch (error) {
+        console.error('찜 처리 중 오류:', error);
+    }
+}
+
+/**
+ * 찜 UI 업데이트
+ */
+function updateWishlistUI(isWishlisted) {
+    const wishlistBtn = document.getElementById('toggleWishlistBtn');
+    const wishlistIcon = document.getElementById('wishlistIcon');
+    const wishlistText = document.getElementById('wishlistText');
+
+    if (!wishlistBtn || !wishlistIcon || !wishlistText) return;
+
+    if (isWishlisted) {
+        // 찜한 상태
+        wishlistBtn.classList.remove('bg-white', 'border-red-500', 'text-red-500');
+        wishlistBtn.classList.add('bg-red-500', 'text-white', 'border-red-500');
+        wishlistIcon.setAttribute('fill', 'currentColor');
+        wishlistText.textContent = '찜 완료';
+    } else {
+        // 찜하지 않은 상태
+        wishlistBtn.classList.remove('bg-red-500', 'text-white');
+        wishlistBtn.classList.add('bg-white', 'border-red-500', 'text-red-500');
+        wishlistIcon.setAttribute('fill', 'none');
+        wishlistText.textContent = '찜';
+    }
+}
+
+/**
+ * 토스트 메시지 표시
+ */
+function showToast(message) {
+    // 기존 토스트 제거
+    const existingToast = document.getElementById('wishlistToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // 토스트 생성
+    const toast = document.createElement('div');
+    toast.id = 'wishlistToast';
+    toast.className = 'fixed bottom-8 right-8 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // 3초 후 제거
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
 }
