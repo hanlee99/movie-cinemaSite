@@ -111,6 +111,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/api/dev/**").hasRole("ADMIN")  // 개발자 API는 관리자만
                         .requestMatchers("/api/watch-history/**").authenticated()
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
