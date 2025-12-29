@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/user-layout}">
+<head>
+    <title>회원 탈퇴</title>
+</head>
+<body>
+    <div layout:fragment="user-content">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">회원 탈퇴</h2>
+
+            <!-- 경고 메시지 -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700 font-semibold">탈퇴 시 다음 정보가 영구적으로 삭제됩니다:</p>
+                        <ul class="mt-2 text-sm text-yellow-700 list-disc list-inside">
+                            <li>계정 정보 (이메일, 닉네임 등)</li>
+                            <li>관람기록 (모든 관람 내역)</li>
+                            <li>찜한 영화 목록</li>
+                        </ul>
+                        <p class="mt-2 text-sm text-yellow-700 font-semibold">
+                            삭제된 데이터는 복구할 수 없습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <div th:if="${error}" class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <p class="text-sm text-red-700" th:text="${error}"></p>
+            </div>
+
+            <!-- 계정 정보 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">계정 정보</h3>
+                <div class="bg-gray-50 p-4 rounded">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <span class="text-sm text-gray-600">닉네임:</span>
+                            <span class="text-sm font-semibold ml-2" th:text="${nickname}"></span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">이메일:</span>
+                            <span class="text-sm font-semibold ml-2" th:text="${email}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 탈퇴 양식 -->
+            <form th:action="@{/user/withdrawal}" method="post" id="withdrawalForm">
+                <!-- LOCAL 계정만 비밀번호 입력 -->
+                <div th:if="${!isOAuthUser}" class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        비밀번호 확인 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="비밀번호를 입력해주세요">
+                </div>
+
+                <!-- 확인 체크박스 -->
+                <div class="mb-6">
+                    <label class="flex items-start">
+                        <input type="checkbox"
+                               id="confirmCheckbox"
+                               required
+                               class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <span class="ml-2 text-sm text-gray-700">
+                            위 내용을 확인했으며, 회원 탈퇴에 동의합니다.
+                        </span>
+                    </label>
+                </div>
+
+                <!-- 버튼 -->
+                <div class="flex gap-3">
+                    <button type="button"
+                            onclick="history.back()"
+                            class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition">
+                        취소
+                    </button>
+                    <button type="submit"
+                            id="submitBtn"
+                            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                        회원 탈퇴
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script layout:fragment="user-script">
+        // 폼 제출 시 재확인
+        document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!confirm('정말로 탈퇴하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+
+            this.submit();
+        });
+    </script>
+</body>
+</html>

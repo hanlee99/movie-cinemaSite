@@ -64,9 +64,7 @@ public class WishlistApiController {
         ));
     }
 
-    /**
-     * OAuth와 Form 로그인 모두 지원하기 위한 헬퍼 메서드
-     */
+
     private Long getUserId(Object principal) {
         if (principal instanceof CustomOAuth2User oauth2User) {
             return oauth2User.getUserId();

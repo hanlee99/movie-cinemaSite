@@ -16,6 +16,16 @@
     <!-- 메인 콘텐츠 -->
     <main layout:fragment="content">
         <div class="max-w-6xl mx-auto px-4">
+            <!-- 성공 메시지 (회원 탈퇴 완료 등) -->
+            <div th:if="${message}" class="mt-4 mb-6 p-4 bg-green-50 border-l-4 border-green-400 rounded">
+                <p class="text-green-700" th:text="${message}"></p>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <div th:if="${error}" class="mt-4 mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded">
+                <p class="text-red-700" th:text="${error}"></p>
+            </div>
+
             <!--replace와 insert 차이 주의 replace는 fragment를 사용한 태그를 날려버림 둘다 사용하고 싶다면 insert-->
             <section id="boxoffice" class="page-section"
                      th:insert="~{fragments/sections/boxoffice :: boxoffice}"></section>

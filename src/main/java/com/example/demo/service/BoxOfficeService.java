@@ -16,9 +16,6 @@ import java.time.format.DateTimeFormatter;
 public class BoxOfficeService {
     private final KobisAdapter kobisAdapter;
 
-    /**
-     * 일일 박스오피스 조회 (캐싱)
-     */
     @Cacheable(value = "dailyBoxOffice", key = "'latest'")
     public DailyBoxOfficeResultDto getDailyBoxOffice() {
         String yesterday = LocalDate.now().minusDays(1)

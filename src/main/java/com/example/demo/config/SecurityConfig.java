@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login", "/user/dev-login", "/user/dev-register").permitAll()
-                        .requestMatchers("/user/mypage", "/user/watch-history").authenticated()
+                        .requestMatchers("/user/mypage", "/user/watch-history", "/user/wishlist", "/user/withdrawal").authenticated()
                         .anyRequest().permitAll()
                 )
                 // OAuth2 로그인 추가

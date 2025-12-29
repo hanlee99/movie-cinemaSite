@@ -48,12 +48,6 @@ public class MovieService {
                 .orElseThrow(() -> new MovieNotFoundException(id));
     }
 
-    /**
-     * 영화 상세 조회 (조회수 증가 포함)
-     *
-     * @param id 영화 ID
-     * @return 영화 상세 정보
-     */
     @Transactional
     @Retryable(
         value = OptimisticLockingFailureException.class,
@@ -70,14 +64,6 @@ public class MovieService {
         return MovieResponseDto.from(entity);
     }
 
-    /**
-     * 조회수 증가 (내부 데이터 수집용)
-     *
-     * 동시성 제어:
-     * - @Version으로 낙관적 락 적용
-     * - 여러 사용자가 동시에 조회해도 Lost Update 방지
-     * - OptimisticLockingFailureException 발생 시 @Retryable이 자동 재시도
-     */
     private void incrementViewCount(Long movieId) {
         MovieStats stats = movieStatsRepository.findById(movieId)
                 .orElseGet(() -> MovieStats.createDefault(movieId));

@@ -50,3 +50,5 @@ Thumbs.db
 ### Environment / Secrets ###
 .env
 src/main/resources/application-local.properties
+
+.claude

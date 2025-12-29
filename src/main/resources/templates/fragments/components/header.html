@@ -40,8 +40,12 @@
                 로그인
             </a>
 
-            <!-- 로그인 상태: 마이페이지 + 로그아웃 -->
+            <!-- 로그인 상태: 사용자 정보 + 마이페이지 + 로그아웃 -->
             <div sec:authorize="isAuthenticated()" class="flex gap-4 items-center">
+                <!-- 로그인된 사용자 표시 -->
+                <span class="text-sm text-gray-600">
+                    <span class="font-semibold text-blue-600" sec:authentication="name"></span>님
+                </span>
                 <a th:href="@{/user/mypage}" class="hover:text-blue-600 transition">
                     마이페이지
                 </a>

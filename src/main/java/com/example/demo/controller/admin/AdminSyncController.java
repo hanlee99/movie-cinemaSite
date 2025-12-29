@@ -80,7 +80,6 @@ public class AdminSyncController {
         }
     }
 
-
      //테스트용 엔드포인드
     @GetMapping("/test")
     public ResponseEntity<?> test() {

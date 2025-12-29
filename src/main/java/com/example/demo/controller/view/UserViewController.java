@@ -4,7 +4,9 @@ import com.example.demo.dto.user.RegisterRequest;
 import com.example.demo.security.CustomOAuth2User;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UserViewController {
     private final UserService userService;
 
@@ -118,5 +121,80 @@ public class UserViewController {
         }
 
         return "user/wishlist";
+    }
+
+    // 회원 탈퇴 확인 페이지
+    @GetMapping("/withdrawal")
+    public String withdrawalPage(@AuthenticationPrincipal Object principal, Model model) {
+        if (principal == null) {
+            return "redirect:/user/login";
+        }
+
+        boolean isOAuthUser = false;
+        String email = null;
+        String nickname = null;
+
+        if (principal instanceof CustomOAuth2User oauth2User) {
+            isOAuthUser = true;
+            email = oauth2User.getEmail();
+            nickname = oauth2User.getNickname();
+        } else if (principal instanceof CustomUserDetails userDetails) {
+            isOAuthUser = false;
+            email = userDetails.getEmail();
+            nickname = userDetails.getNickname();
+        } else {
+            return "redirect:/user/login";
+        }
+
+        model.addAttribute("isOAuthUser", isOAuthUser);
+        model.addAttribute("email", email);
+        model.addAttribute("nickname", nickname);
+
+        return "user/withdrawal";
+    }
+
+    // 회원 탈퇴 처리
+    @PostMapping("/withdrawal")
+    public String processWithdrawal(
+        @AuthenticationPrincipal Object principal,
+        @RequestParam(required = false) String password,
+        HttpServletRequest request,
+        RedirectAttributes redirectAttributes
+    ) {
+        if (principal == null) {
+            return "redirect:/user/login";
+        }
+
+        try {
+            Long userId = null;
+
+            if (principal instanceof CustomOAuth2User oauth2User) {
+                userId = oauth2User.getUserId();
+            } else if (principal instanceof CustomUserDetails userDetails) {
+                userId = userDetails.getUserId();
+            } else {
+                redirectAttributes.addFlashAttribute("error", "인증 정보를 찾을 수 없습니다.");
+                return "redirect:/user/withdrawal";
+            }
+
+            // 회원 탈퇴 처리
+            userService.deleteUser(userId, password);
+
+            // 세션 무효화 및 로그아웃
+            request.getSession().invalidate();
+
+            redirectAttributes.addFlashAttribute("message",
+                "회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.");
+            return "redirect:/";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/user/withdrawal";
+        } catch (Exception e) {
+            log.error("회원 탈퇴 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error",
+                "회원 탈퇴 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            return "redirect:/user/withdrawal";
+        }
     }
 }
