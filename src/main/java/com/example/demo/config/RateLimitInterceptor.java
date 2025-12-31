@@ -26,6 +26,15 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                              Object handler) throws Exception {
 
         String ip = getClientIP(request);
+        String path = request.getRequestURI();
+
+        // 정적 리소스는 Rate Limit 제외
+        if (path.startsWith("/css/") ||
+                path.startsWith("/js/") ||
+                path.startsWith("/images/") ||
+                path.equals("/favicon.ico")) {
+            return true;
+        }
 
         Bucket bucket = resolveBucket(ip);
 
@@ -47,7 +56,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     private Bucket createNewBucket() {
         // 1분에 20개 토큰, 20개씩 충전
-        Bandwidth limit = Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(20,
+                Refill.intervally(20, Duration.ofMinutes(1)));
         return Bucket.builder()
                 .addLimit(limit)
                 .build();
