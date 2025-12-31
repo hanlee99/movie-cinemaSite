@@ -2,7 +2,7 @@
 
 > 실시간 박스오피스와 영화 정보를 한눈에 확인할 수 있는 영화 정보 통합 서비스
 
-🔗 **[배포 사이트](https://movie-cinemasite.onrender.com/)** | 📂 **[GitHub](https://github.com/hanlee99/movie-cinemaSite)**
+🔗 **[배포 사이트](https://movierang.com/)** | 📂 **[GitHub](https://github.com/hanlee99/movie-cinemaSite)**
 
 ---
 
@@ -42,23 +42,11 @@
 | **Database** | PostgreSQL (Production), H2 (Development) |
 | **Build Tool** | Gradle |
 | **External APIs** | KOBIS API, KMDB API, KAKAO API |
-| **Security** | Spring Security, OAuth2 Client (Naver/Google), Bucket4j (Rate Limiting) |
+| **Security** | Spring Security, OAuth2 Client (Naver/Google) |
 | **Caching** | Caffeine Cache |
 | **Concurrency** | JPA @Version (Optimistic Locking), Spring Retry |
 
 ---
-
-## 🚀 배포 & 실행 방법
-
-### ⚠️ 첫 접속 시 안내
-무료 호스팅(Render Free Tier) 사용으로 **첫 방문 시 2-3분** 소요될 수 있습니다.  
-서버가 활성화되면 평균 응답 속도는 **1초 이내**입니다.
-
-### 온라인 접속 (배포 버전)
-🔗 **https://movie-cinemasite.onrender.com/**
-- PostgreSQL 기반 운영 중
-- 2025년 영화 데이터 기반
-- 즉시 접속 가능
 
 ### 로컬 실행 (개발 환경)
 
@@ -259,9 +247,8 @@ External APIs              PostgreSQL Database
 
 ## 🚀 배포 환경
 
-- **Platform**: [Render](https://render.com) (무료 Tier)
+- **Platform**: Aws (ec2)
 - **Database**: PostgreSQL (무료 Tier)
-- **Runtime**: Docker
 - **CI/CD**: GitHub 자동 연동 (main 브랜치 푸시 시 자동 배포)
 - **Status**: 운영 중 ✅
 
@@ -294,10 +281,6 @@ open build/reports/jacoco/test/html/index.html
 
 - [ ] Swagger/SpringDoc을 통한 API 문서화
 - [ ] Redis 캐싱 레이어 구현
-- [ ] GitHub Actions를 통한 자동 데이터 동기화
-- [x] 사용자 인증 및 찜하기 기능 ✅
-- [x] 관람기록 관리 기능 ✅
-- [x] Optimistic Locking을 통한 동시성 제어 ✅
 - [ ] 사용자 통계 (월별 관람 횟수, 장르 선호도 등)
 - [ ] 영화 추천 알고리즘 (관람기록/찜 기반)
 
