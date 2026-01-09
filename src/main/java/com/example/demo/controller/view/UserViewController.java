@@ -5,12 +5,14 @@ import com.example.demo.security.CustomOAuth2User;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,9 +31,16 @@ public class UserViewController {
 
     // 개발자용 회원가입 처리
     @PostMapping("/dev-register")
-    public String devRegister(@ModelAttribute RegisterRequest request,
+    public String devRegister(@Valid @ModelAttribute RegisterRequest request,
+                          BindingResult bindingResult,
                           RedirectAttributes redirectAttributes,
                           Model model) {
+        // Validation 에러 처리
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", bindingResult.getFieldError().getDefaultMessage());
+            return "user/dev-register";
+        }
+
         try {
             userService.register(request);
             redirectAttributes.addFlashAttribute("message", "회원가입이 완료되었습니다. 로그인해주세요.");
