@@ -1,6 +1,7 @@
 package com.movierang.controller.api;
 
 import com.movierang.dto.watchhistory.CreateWatchHistoryRequest;
+import com.movierang.dto.watchhistory.UpdateWatchHistoryRequest;
 import com.movierang.dto.watchhistory.WatchHistoryResponse;
 import com.movierang.exception.UnauthorizedException;
 import com.movierang.security.CustomOAuth2User;
@@ -36,6 +37,17 @@ public class WatchHistoryApiController {
         Long userId = getUserId(principal);
         List<WatchHistoryResponse> responses = watchHistoryService.getMyHistory(userId);
         return ResponseEntity.ok(responses);
+    }
+
+    // 관람기록 수정
+    @PutMapping("/{historyId}")
+    public ResponseEntity<WatchHistoryResponse> update(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable Long historyId,
+            @RequestBody UpdateWatchHistoryRequest request) {
+        Long userId = getUserId(principal);
+        WatchHistoryResponse response = watchHistoryService.update(userId, historyId, request);
+        return ResponseEntity.ok(response);
     }
 
     // 관람기록 삭제

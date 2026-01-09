@@ -2,7 +2,7 @@
 
 > 실시간 박스오피스와 영화 정보를 한눈에 확인할 수 있는 영화 정보 통합 서비스
 
-🔗 **[배포 사이트](https://movie-cinemasite.onrender.com/)** | 📂 **[GitHub](https://github.com/hanlee99/movie-cinemaSite)**
+🔗 **[배포 사이트](https://www.movierang.com/)** | 📂 **[GitHub](https://github.com/hanlee99/movie-cinemaSite)**
 
 ---
 
@@ -37,7 +37,7 @@
 
 | 구분 | 사용 기술 |
 |------|-----------|
-| **Backend** | Java 21, Spring Boot 3.x, Spring Data JPA, Lombok |
+| **Backend** | Java 21, Spring Boot 3.5.6, Spring Data JPA, Lombok |
 | **Frontend** | Thymeleaf, TailwindCSS, DaisyUI, JavaScript (ES6+) |
 | **Database** | PostgreSQL (Production), H2 (Development) |
 | **Build Tool** | Gradle |
@@ -45,19 +45,18 @@
 | **Security** | Spring Security, OAuth2 Client (Naver/Google), Bucket4j (Rate Limiting) |
 | **Caching** | Caffeine Cache |
 | **Concurrency** | JPA @Version (Optimistic Locking), Spring Retry |
+| **API Docs** | SpringDoc OpenAPI (Swagger UI) |
+| **CI/CD** | GitHub Actions |
 
 ---
 
 ## 🚀 배포 & 실행 방법
 
-### ⚠️ 첫 접속 시 안내
-무료 호스팅(Render Free Tier) 사용으로 **첫 방문 시 2-3분** 소요될 수 있습니다.  
-서버가 활성화되면 평균 응답 속도는 **1초 이내**입니다.
 
 ### 온라인 접속 (배포 버전)
-🔗 **https://movie-cinemasite.onrender.com/**
-- PostgreSQL 기반 운영 중
-- 2025년 영화 데이터 기반
+🔗 **https://www.movierang.com/**
+- AWS EC2 + PostgreSQL 기반 운영 중
+- 실시간 영화 데이터 기반
 - 즉시 접속 가능
 
 ### 로컬 실행 (개발 환경)
@@ -177,7 +176,7 @@ http://localhost:8080
 demo/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/demo/
+│   │   ├── java/com/movierang/
 │   │   │   ├── controller/         # REST API 엔드포인트
 │   │   │   ├── service/            # 비즈니스 로직 & 트랜잭션 관리
 │   │   │   ├── repository/         # JPA Repository
@@ -242,13 +241,16 @@ External APIs              PostgreSQL Database
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/user/watch-history` | 관람기록 페이지 | Required |
-| GET | `/api/watch-history` | 내 관람기록 조회 | Required |
+| GET | `/api/watch-history/my` | 내 관람기록 조회 | Required |
 | POST | `/api/watch-history` | 관람기록 추가 | Required |
+| PUT | `/api/watch-history/{id}` | 관람기록 수정 | Required |
 | DELETE | `/api/watch-history/{id}` | 관람기록 삭제 | Required |
 | GET | `/user/wishlist` | 찜 목록 페이지 | Required |
 | GET | `/api/wishlist` | 내 찜 목록 조회 | Required |
 | GET | `/api/wishlist/{movieId}` | 찜 상태 확인 | Required |
 | POST | `/api/wishlist/{movieId}` | 찜 토글 (추가/삭제) | Required |
+
+> API 문서는 Swagger UI에서 확인 가능: `/swagger-ui/index.html`
 
 ### 극장 정보 API
 | Method | Endpoint | Description | Parameters |
@@ -259,10 +261,9 @@ External APIs              PostgreSQL Database
 
 ## 🚀 배포 환경
 
-- **Platform**: [Render](https://render.com) (무료 Tier)
-- **Database**: PostgreSQL (무료 Tier)
-- **Runtime**: Docker
-- **CI/CD**: GitHub 자동 연동 (main 브랜치 푸시 시 자동 배포)
+- **Platform**: AWS EC2
+- **Database**: PostgreSQL
+- **Domain**: movierang.com (Route 53)
 - **Status**: 운영 중 ✅
 
 ### 데이터 동기화 전략
@@ -292,14 +293,15 @@ open build/reports/jacoco/test/html/index.html
 
 ## 📝 향후 개선 계획
 
-- [ ] Swagger/SpringDoc을 통한 API 문서화
+- [x] SpringDoc OpenAPI를 통한 API 문서화 (Swagger UI)
 - [ ] Redis 캐싱 레이어 구현
 - [ ] GitHub Actions를 통한 자동 데이터 동기화
-- [x] 사용자 인증 및 찜하기 기능 ✅
-- [x] 관람기록 관리 기능 ✅
-- [x] Optimistic Locking을 통한 동시성 제어 ✅
+- [x] 사용자 인증 및 찜하기 기능
+- [x] 관람기록 관리 기능 (CRUD 완성)
+- [x] Optimistic Locking을 통한 동시성 제어
 - [ ] 사용자 통계 (월별 관람 횟수, 장르 선호도 등)
 - [ ] 영화 추천 알고리즘 (관람기록/찜 기반)
+- [ ] 테스트 코드 보강 (Service, Controller 단위 테스트)
 
 ---
 

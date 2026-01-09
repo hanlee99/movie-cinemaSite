@@ -38,7 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation files('libs/kobis-opcl-rest-v1.0.jar')
 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
 
     implementation 'org.locationtech.proj4j:proj4j:1.1.5'
 
