@@ -191,9 +191,16 @@ public class MovieService {
     }
 
     private int yearDiff(String repRlsDate, LocalDate kobisOpenDt) {
-        int year1 = Integer.parseInt(repRlsDate.substring(0, 4));
-        int year2 = kobisOpenDt.getYear();
-        return Math.abs(year1 - year2);
+        if (repRlsDate == null || repRlsDate.length() < 4) {
+            return Integer.MAX_VALUE;
+        }
+        try {
+            int year1 = Integer.parseInt(repRlsDate.substring(0, 4));
+            int year2 = kobisOpenDt.getYear();
+            return Math.abs(year1 - year2);
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
     }
 
 }
