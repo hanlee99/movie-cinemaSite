@@ -1,5 +1,6 @@
 package com.movierang.controller.api;
 
+import com.movierang.dto.wishlist.WishlistItemResponse;
 import com.movierang.exception.UnauthorizedException;
 import com.movierang.security.CustomOAuth2User;
 import com.movierang.security.CustomUserDetails;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Wishlist API", description = "찜 관련 API (내부 데이터 수집용)")
@@ -54,15 +56,11 @@ public class WishlistApiController {
 
     @Operation(summary = "내 찜 목록 조회", description = "로그인한 사용자의 찜 목록 조회")
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getMyWishlist(
+    public ResponseEntity<List<WishlistItemResponse>> getMyWishlist(
             @AuthenticationPrincipal Object principal
     ) {
         Long userId = getUserId(principal);
-        var wishlist = wishlistService.getMyWishlist(userId);
-
-        return ResponseEntity.ok(Map.of(
-                "wishlist", wishlist
-        ));
+        return ResponseEntity.ok(wishlistService.getMyWishlist(userId));
     }
 
 

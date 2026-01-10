@@ -23,8 +23,7 @@ async function loadWishlist() {
             throw new Error('찜 목록 조회 실패');
         }
 
-        const data = await response.json();
-        const wishlist = data.wishlist;
+        const wishlist = await response.json();
 
         if (wishlist.length === 0) {
             container.classList.add('hidden');

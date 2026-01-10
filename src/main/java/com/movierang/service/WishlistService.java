@@ -1,5 +1,6 @@
 package com.movierang.service;
 
+import com.movierang.dto.wishlist.WishlistItemResponse;
 import com.movierang.entity.MovieEntity;
 import com.movierang.entity.MovieStats;
 import com.movierang.entity.Wishlist;
@@ -16,7 +17,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -96,29 +100,26 @@ public class WishlistService {
         return wishlistRepository.existsByUserIdAndMovieId(userId, movieId);
     }
 
-    public List<Map<String, Object>> getMyWishlist(Long userId) {
+    public List<WishlistItemResponse> getMyWishlist(Long userId) {
         List<Wishlist> wishlistItems = wishlistRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        List<Map<String, Object>> result = new ArrayList<>();
 
-        for (Wishlist wishlist : wishlistItems) {
-            MovieEntity movie = movieRepository.findById(wishlist.getMovieId()).orElse(null);
-
-            if (movie == null) {
-                continue;
-            }
-
-            Map<String, Object> item = new HashMap<>();
-            item.put("wishlistId", wishlist.getId());
-            item.put("movieId", movie.getId());
-            item.put("title", movie.getTitle());
-            item.put("poster", movie.getPoster() != null ? movie.getPoster() : "");
-            item.put("genre", movie.getGenre() != null ? movie.getGenre() : "");
-            item.put("repRlsDate", movie.getRepRlsDate() != null ? movie.getRepRlsDate() : "");
-            item.put("createdAt", wishlist.getCreatedAt().toString());
-
-            result.add(item);
+        if (wishlistItems.isEmpty()) {
+            return List.of();
         }
 
-        return result;
+        // 영화 ID 목록 추출
+        List<Long> movieIds = wishlistItems.stream()
+                .map(Wishlist::getMovieId)
+                .toList();
+
+        // 영화 정보 일괄 조회 (N+1 해결)
+        Map<Long, MovieEntity> movieMap = movieRepository.findAllById(movieIds).stream()
+                .collect(Collectors.toMap(MovieEntity::getId, movie -> movie));
+
+        // DTO 변환
+        return wishlistItems.stream()
+                .filter(wishlist -> movieMap.containsKey(wishlist.getMovieId()))
+                .map(wishlist -> WishlistItemResponse.from(wishlist, movieMap.get(wishlist.getMovieId())))
+                .toList();
     }
 }

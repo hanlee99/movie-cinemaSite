@@ -34,7 +34,6 @@ public class CinemaService {
                 .collect(Collectors.toList());
     }
 
-
     public List<CinemaResponseDto> getSpecialTheaterCinemas() {
         return cinemaRepository.findSpecialTheaterCinemas()
                 .stream()
