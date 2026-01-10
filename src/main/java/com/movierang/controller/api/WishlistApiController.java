@@ -1,9 +1,7 @@
 package com.movierang.controller.api;
 
 import com.movierang.dto.wishlist.WishlistItemResponse;
-import com.movierang.exception.UnauthorizedException;
-import com.movierang.security.CustomOAuth2User;
-import com.movierang.security.CustomUserDetails;
+import com.movierang.security.AuthenticationUtils;
 import com.movierang.service.WishlistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +28,7 @@ public class WishlistApiController {
             @PathVariable Long movieId,
             @AuthenticationPrincipal Object principal
     ) {
-        Long userId = getUserId(principal);
+        Long userId = AuthenticationUtils.getUserId(principal);
         boolean isWishlisted = wishlistService.toggleWishlist(userId, movieId);
 
         return ResponseEntity.ok(Map.of(
@@ -45,7 +43,7 @@ public class WishlistApiController {
             @PathVariable Long movieId,
             @AuthenticationPrincipal Object principal
     ) {
-        Long userId = getUserId(principal);
+        Long userId = AuthenticationUtils.getUserId(principal);
         boolean isWishlisted = wishlistService.isWishlisted(userId, movieId);
 
         return ResponseEntity.ok(Map.of(
@@ -59,17 +57,7 @@ public class WishlistApiController {
     public ResponseEntity<List<WishlistItemResponse>> getMyWishlist(
             @AuthenticationPrincipal Object principal
     ) {
-        Long userId = getUserId(principal);
+        Long userId = AuthenticationUtils.getUserId(principal);
         return ResponseEntity.ok(wishlistService.getMyWishlist(userId));
-    }
-
-
-    private Long getUserId(Object principal) {
-        if (principal instanceof CustomOAuth2User oauth2User) {
-            return oauth2User.getUserId();
-        } else if (principal instanceof CustomUserDetails userDetails) {
-            return userDetails.getUserId();
-        }
-        throw new UnauthorizedException("인증되지 않은 사용자입니다.");
     }
 }

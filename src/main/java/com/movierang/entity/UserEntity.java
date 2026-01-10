@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -51,5 +50,21 @@ public class UserEntity {
 
     public boolean isOAuthUser() {
         return oauthProvider != null && !oauthProvider.equals("LOCAL");
+    }
+
+    // 도메인 메서드: OAuth 정보 업데이트
+    public void updateOAuthInfo(String provider, String oauthId) {
+        this.oauthProvider = provider;
+        this.oauthId = oauthId;
+    }
+
+    // 도메인 메서드: 닉네임 업데이트
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    // 도메인 메서드: 이메일 업데이트
+    public void updateEmail(String email) {
+        this.email = email;
     }
 }

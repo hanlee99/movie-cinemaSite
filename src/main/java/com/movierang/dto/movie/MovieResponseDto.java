@@ -10,9 +10,8 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class MovieResponseDto {
 
@@ -95,11 +94,9 @@ public class MovieResponseDto {
                 yyyymmdd.substring(6, 8);
     }
 
-    // ✅ PersonDto
     @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Builder
     public static class PersonDto {
         private String name;

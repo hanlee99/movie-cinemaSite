@@ -6,9 +6,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class CinemaResponseDto {
     private Long cinemaId;

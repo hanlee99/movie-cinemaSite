@@ -56,8 +56,8 @@ public class OAuthUserService extends DefaultOAuth2UserService {
                 userInfo.getOauthId()
         ).map(user -> {
             // 기존 OAuth 유저 정보 업데이트
-            user.setNickname(userInfo.getNickname());
-            user.setEmail(userInfo.getEmail());
+            user.updateNickname(userInfo.getNickname());
+            user.updateEmail(userInfo.getEmail());
             log.info("기존 OAuth 유저 업데이트 - ID: {}, Email: {}, Provider: {}",
                 user.getId(), user.getEmail(), user.getOauthProvider());
             return userRepository.save(user);
@@ -68,8 +68,7 @@ public class OAuthUserService extends DefaultOAuth2UserService {
                     // 기존 계정에 새로운 OAuth 정보 추가 (첫 번째 OAuth 정보만 유지)
                     if (existingUser.getOauthProvider() == null || existingUser.getOauthProvider().equals("LOCAL")) {
                         // LOCAL 계정이거나 OAuth 정보가 없으면 업데이트
-                        existingUser.setOauthProvider(userInfo.getProvider());
-                        existingUser.setOauthId(userInfo.getOauthId());
+                        existingUser.updateOAuthInfo(userInfo.getProvider(), userInfo.getOauthId());
                         log.info("기존 계정에 OAuth 정보 추가 - ID: {}, Email: {}, New Provider: {}",
                             existingUser.getId(), existingUser.getEmail(), userInfo.getProvider());
                     } else {
@@ -78,7 +77,7 @@ public class OAuthUserService extends DefaultOAuth2UserService {
                             userInfo.getEmail(), existingUser.getOauthProvider(), userInfo.getProvider());
                     }
                     // 닉네임은 최신 정보로 업데이트
-                    existingUser.setNickname(userInfo.getNickname());
+                    existingUser.updateNickname(userInfo.getNickname());
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {

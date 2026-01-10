@@ -5,9 +5,8 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "movie_person")
 public class MoviePersonEntity {
@@ -25,4 +24,9 @@ public class MoviePersonEntity {
 
     private String roleGroup; // 감독, 배우
     private String roleName;  // 주연, 조연 등
+
+    // 연관관계 설정 메서드
+    public void assignMovie(MovieEntity movie) {
+        this.movie = movie;
+    }
 }

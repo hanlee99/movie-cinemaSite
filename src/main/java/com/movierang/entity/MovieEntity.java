@@ -9,9 +9,8 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "movie")
 public class MovieEntity {
@@ -109,6 +108,6 @@ public class MovieEntity {
     // 편의 메서드
     public void addPerson(MoviePersonEntity person) {
         people.add(person);
-        person.setMovie(this);
+        person.assignMovie(this);
     }
 }
