@@ -24,10 +24,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run tests
+        run: ./gradlew test
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
       - name: Build with Gradle
         run: ./gradlew build -x test
-
-
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

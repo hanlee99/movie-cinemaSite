@@ -46,7 +46,8 @@
 | **Caching** | Caffeine Cache |
 | **Concurrency** | JPA @Version (Optimistic Locking), Spring Retry |
 | **API Docs** | SpringDoc OpenAPI (Swagger UI) |
-| **CI/CD** | GitHub Actions |
+| **CI/CD** | GitHub Actions (테스트 자동화 포함) |
+| **Testing** | JUnit 5, Mockito, AssertJ, H2 (테스트 DB) |
 
 ---
 
@@ -275,20 +276,28 @@ External APIs              PostgreSQL Database
 ---
 
 ## 🧪 테스트
+
 ```bash
 # 전체 테스트 실행
 ./gradlew test
 
-# 테스트 커버리지 리포트 생성
-./gradlew test jacocoTestReport
-
-# 리포트 확인
-open build/reports/jacoco/test/html/index.html
+# 테스트 프로파일로 실행 (CI 환경)
+SPRING_PROFILES_ACTIVE=test ./gradlew test
 ```
+
 ### 테스트 구성
-- **Service 계층 테스트**: MovieService 핵심 로직 검증
-- **통합 테스트**: 외부 API 연동 확인
-- **Entity 매핑 테스트**: DTO 변환 검증
+
+| 분류 | 테스트 클래스 | 설명 |
+|------|--------------|------|
+| **단위 테스트** | `WishlistServiceTest` | 찜 기능 비즈니스 로직 검증 (8개 테스트) |
+| **단위 테스트** | `AuthenticationUtilsTest` | OAuth2/Form 로그인 인증 유틸리티 검증 (7개 테스트) |
+| **단위 테스트** | `DailyBoxOfficeResponseTest` | DTO 변환 로직 검증 |
+| **통합 테스트** | `MovieSyncServiceTest` | 영화 동기화 서비스 DB 연동 테스트 |
+
+### CI/CD 파이프라인
+- **CI (dev → main PR)**: 테스트 실행 → 빌드 → 아티팩트 업로드
+- **CD (main push)**: 빌드 → EC2 배포 → Health Check
+
 ---
 
 ## 📝 향후 개선 계획
@@ -301,7 +310,9 @@ open build/reports/jacoco/test/html/index.html
 - [x] Optimistic Locking을 통한 동시성 제어
 - [ ] 사용자 통계 (월별 관람 횟수, 장르 선호도 등)
 - [ ] 영화 추천 알고리즘 (관람기록/찜 기반)
-- [ ] 테스트 코드 보강 (Service, Controller 단위 테스트)
+- [x] 테스트 코드 보강 (Service 단위 테스트, CI 테스트 자동화)
+- [ ] Controller 단위 테스트 추가
+- [ ] WireMock을 활용한 외부 API 통합 테스트
 
 ---
 

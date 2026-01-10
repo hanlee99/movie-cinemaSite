@@ -2,6 +2,7 @@ package com.movierang.integration.service;
 
 import com.movierang.dto.movie.MovieResponseDto;
 import com.movierang.service.MovieService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * MovieService 통합 테스트
  * - 실제 DB와 외부 API를 사용하는 테스트
  * - 환경에 따라 실패할 수 있음 (데이터 의존)
+ *
+ * TODO: WireMock 도입하여 외부 API 의존성 제거 필요
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Disabled("실제 DB 데이터 및 외부 API 환경 필요 - WireMock 도입 예정")
 @DisplayName("MovieService 통합 테스트")
 class MovieServiceIntegrationTest {
 
