@@ -54,17 +54,19 @@ class DailyBoxOfficeResponseTest {
                 .build();
 
         // given - DB에서 가져온 영화 정보
-        MovieEntity movie1 = new MovieEntity();
-        movie1.setDocId("KMDB001");
-        movie1.setTitle("프레데터: 죽음의 땅");
-        movie1.setPoster("http://poster1.jpg");
-        movie1.setGenre("액션");
+        MovieEntity movie1 = MovieEntity.builder()
+                .docId("KMDB001")
+                .title("프레데터: 죽음의 땅")
+                .poster("http://poster1.jpg")
+                .genre("액션")
+                .build();
 
-        MovieEntity movie2 = new MovieEntity();
-        movie2.setDocId("KMDB002");
-        movie2.setTitle("퍼스트 라이드");
-        movie2.setPoster("http://poster2.jpg");
-        movie2.setGenre("드라마");
+        MovieEntity movie2 = MovieEntity.builder()
+                .docId("KMDB002")
+                .title("퍼스트 라이드")
+                .poster("http://poster2.jpg")
+                .genre("드라마")
+                .build();
 
         Map<String, MovieEntity> movieMap = new HashMap<>();
         movieMap.put("프레데터: 죽음의 땅", movie1);
@@ -170,11 +172,12 @@ class DailyBoxOfficeResponseTest {
                 .build();
 
         // DB에 1개 영화만 존재
-        MovieEntity movie1 = new MovieEntity();
-        movie1.setDocId("KMDB001");
-        movie1.setTitle("DB에 있는 영화");
-        movie1.setPoster("http://poster.jpg");
-        movie1.setGenre("액션");
+        MovieEntity movie1 = MovieEntity.builder()
+                .docId("KMDB001")
+                .title("DB에 있는 영화")
+                .poster("http://poster.jpg")
+                .genre("액션")
+                .build();
 
         Map<String, MovieEntity> movieMap = new HashMap<>();
         movieMap.put("DB에 있는 영화", movie1);
