@@ -211,10 +211,10 @@ demo/
 Presentation Layer (Controller)
     ↓
 Business Layer (Service)
-    ↓ ↓ ↓
-Adapter Layer | Mapper Layer | Persistence Layer
-    ↓                              ↓
-External APIs              PostgreSQL Database
+              ↓
+Adapter Layer | Persistence Layer
+    ↓                    ↓
+External APIs   PostgreSQL Database
 ```
 
 ### 주요 설계 패턴
