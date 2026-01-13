@@ -36,7 +36,7 @@ public class SecurityConfig {
     // Admin용 SecurityFilterChain (우선순위 높음)
     @Bean
     @Order(1)
-    public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain adminFilterChain(HttpSecurity http, InMemoryUserDetailsManager adminUserDetailsService) throws Exception {
         return http
                 .securityMatcher("/admin/**")
                 .csrf(csrf -> csrf.disable())
@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .loginPage("/admin/login")
                         .loginProcessingUrl("/admin/login")
                         .defaultSuccessUrl("/admin/dashboard", true)
+                        .failureUrl("/admin/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll()
                 )
+                .userDetailsService(adminUserDetailsService)
                 .build();
     }
 
@@ -133,15 +135,23 @@ public class SecurityConfig {
 
     // Admin 인증용 UserDetailsService (InMemory)
     @Bean
-    public InMemoryUserDetailsManager adminUserDetailsService() {
+    public InMemoryUserDetailsManager adminUserDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails admin = User.builder()
                 .username(adminUsername)
-                .password(passwordEncoder().encode(adminPassword))
+                .password(passwordEncoder.encode(adminPassword))
                 .roles("ADMIN")
                 .build();
 
         return new InMemoryUserDetailsManager(admin);
     }
+
+    /*@Bean
+    public AuthenticationProvider adminAuthenticationProvider(PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(adminUserDetailsService(passwordEncoder));
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }*/
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

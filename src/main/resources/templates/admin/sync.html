@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <title>데이터 동기화 관리</title>
     <style>
@@ -155,9 +153,6 @@
 </div>
 
 <script>
-    // CSRF 토큰 가져오기
-    const token = document.querySelector('meta[name="_csrf"]').content;
-    const header = document.querySelector('meta[name="_csrf_header"]').content;
 
     function showResult(elementId, message, isSuccess) {
         const result = document.getElementById(elementId);
@@ -177,10 +172,7 @@
         showLoading('cache-loading', true);
         try {
             const response = await fetch('/admin/api/cache/boxoffice', {
-                method: 'DELETE',
-                headers: {
-                    [header]: token
-                }
+                method: 'DELETE'
             });
             const data = await response.json();
             showResult('cache-result', data.message, response.ok);
@@ -201,10 +193,7 @@
         showLoading('year-loading', true);
         try {
             const response = await fetch(`/admin/api/sync/year?year=${year}`, {
-                method: 'POST',
-                headers: {
-                    [header]: token
-                }
+                method: 'POST'
             });
             const data = await response.json();
             const message = `
@@ -233,10 +222,7 @@
         showLoading('range-loading', true);
         try {
             const response = await fetch(`/admin/api/sync-kmdb/range?startDate=${startDate}&endDate=${endDate}`, {
-                method: 'POST',
-                headers: {
-                    [header]: token
-                }
+                method: 'POST'
             });
             const data = await response.json();
             showResult('range-result', data.message, response.ok);
