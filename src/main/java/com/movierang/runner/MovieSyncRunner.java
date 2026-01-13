@@ -18,16 +18,14 @@ public class MovieSyncRunner implements CommandLineRunner {
     private final MovieRepository movieRepository;
     @Override
     public void run(String... args) throws Exception{
-        if (movieRepository.count() > 0) {
+        /*if (movieRepository.count() > 0) {
             log.info("⏭ 기존 영화 데이터가 존재하여 초기 동기화를 건너뜁니다.");
             return;
-        }
+        }*/
 
         log.info("🎬 KMDB 영화 동기화 시작...");
-        movieSyncService.syncMoviesByYear(2025);
+        movieSyncService.syncMoviesByYear(2021);
         log.info("✅ 동기화 완료!");
         //movieSyncService.syncMovieByTitle("가타카");
-
-
     }
 }

@@ -1,4 +1,4 @@
-package com.movierang.external.kmdb;
+package com.example.demo.external.kmdb;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -49,9 +49,6 @@ public class KmdbApiClient {
         if (json == null || !json.trim().startsWith("{")) {
             throw new RuntimeException("KMDB 응답이 비정상입니다.");
         }
-
-        // KMDB 데이터에 포함된 제어 문자 제거 (code 0-31, 단 탭/줄바꿈 제외)
-        json = json.replaceAll("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]", "");
 
         try {
             return mapper.readValue(json, KmdbResponse.class);
