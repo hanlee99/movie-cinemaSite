@@ -4,6 +4,7 @@ import com.movierang.entity.MovieEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,6 +30,9 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 
     List<MovieEntity> findByTitleEtcContaining(String keyword);
 
+    @Modifying
+    @Query("UPDATE MovieEntity m SET m.poster = :poster WHERE m.docId = :docId AND m.poster IS NULL")
+    void updatePosterByDocId(@Param("docId") String docId, @Param("poster") String poster);
 
     List<MovieEntity> findAllByTitleContainingIgnoreCase(String title);
 

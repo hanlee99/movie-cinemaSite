@@ -24,7 +24,7 @@ public class MovieSyncRunner implements CommandLineRunner {
         }*/
 
         log.info("🎬 KMDB 영화 동기화 시작...");
-        movieSyncService.syncMoviesByYear(2021);
+        movieSyncService.syncMoviesByYear(2025);
         log.info("✅ 동기화 완료!");
         //movieSyncService.syncMovieByTitle("가타카");
     }

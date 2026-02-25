@@ -45,7 +45,10 @@ public class MovieSyncService {
 
     public void saveSingleMovie(KmdbMovieDto dto) {
         if (movieRepository.existsByDocId(dto.getDocId())) {
-            log.debug("Movie already exists. docId={}", dto.getDocId());
+            if (dto.getPoster() != null && !dto.getPoster().isBlank()) {
+                movieRepository.updatePosterByDocId(dto.getDocId(), dto.getPoster());
+                log.debug("Poster updated. docId={}", dto.getDocId());
+            }
             return;
         }
 
